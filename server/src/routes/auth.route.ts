@@ -1,6 +1,7 @@
 import express from "express";
-import { telgramAuth } from "../controller/auth.controller";
-const authRoute = express.Router();
-
-authRoute.post("/telegram", telgramAuth);
-export default authRoute;
+import { me, telegramAuth } from "../controller/auth.controller";
+import { requireAuth } from "./../middleware/auth";
+const route = express.Router();
+route.post("/telegram", telegramAuth);
+route.get("/me", requireAuth, me);
+export default route;
