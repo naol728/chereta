@@ -1,0 +1,13 @@
+{
+  "app": {
+    "welcome": "Baga gara Chereta dhuftan",
+    "banner": "Biddi Keessan Filadhaa, Badhaasa Mo'adhaa!",
+    "bannerdescription": "Gatii biddii namni biraa hin filanne filadhaa. Yeroo caalbaasichi xumuramu biddiin keessan isa addaa fi hundarra gadi aanaa yoo ta'e, ni mo'attu!",
+    "home": "Mana",
+    "bids": "Caalbaasota",
+    "mybids": "Biddiiwwan Koo",
+    "profile": "Piroofaayilii",
+    "language": "Afaan",
+    "logout": "Ba'i"
+  }
+}

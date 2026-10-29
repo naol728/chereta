@@ -1,0 +1,14 @@
+{
+  "app": {
+    "welcome": "Welcome to Chereta",
+    "banner": "Choose Your Bid. Win the Prize!",
+    "bannerdescription": "Pick a bid that nobody else chooses. If your bid is the lowest unique bid when the auction ends, you win!",
+    "bannerbutton": "go to the bid",
+    "home": "Home",
+    "bids": "Auctions",
+    "mybids": "My Bids",
+    "profile": "Profile",
+    "language": "Language",
+    "logout": "Log Out"
+  }
+}
