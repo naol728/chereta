@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "TypeScript Express API with Supabase",
-  "type": "module",
   "main": "dist/src/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
