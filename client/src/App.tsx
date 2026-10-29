@@ -1,47 +1,65 @@
-import { ThemeProvider } from "@/components/theme-provider"
-import { Route, Routes } from "react-router-dom"
-import MainLayout from "./layout/MainLayout"
-import Home from "./pages/user/Home"
-import MyBids from "./pages/user/MyBids"
-import Bids from "./pages/user/Bids"
-import Profile from "./pages/user/Profile"
-import Bid from "./pages/user/Bid"
-import { useAppDispatch, useAppSelector } from "./store/hook"
-import { useEffect, useState } from "react"
-import { initAuth } from "./store/slice/auth"
-import PhoneNumberSetup from "./components/PhoneNumberSetup"
-import Loading from "./components/Loading"
-import { toast } from "sonner"
+
+import { Route, Routes } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import MainLayout from "./layout/MainLayout";
+import Home from "./pages/user/Home";
+import MyBids from "./pages/user/MyBids";
+import Bids from "./pages/user/Bids";
+import Profile from "./pages/user/Profile";
+import Bid from "./pages/user/Bid";
+
+import { useAppDispatch, useAppSelector } from "./store/hook";
+import { initAuth } from "./store/slice/auth";
+
+import PhoneNumberSetup from "./components/PhoneNumberSetup";
+import Loading from "./components/Loading";
 
 function App() {
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.auth.user)
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    async function init() {
-      try {
-        await dispatch(initAuth()).unwrap();
+  const user = useAppSelector((state) => state.auth.user);
 
-      } catch (err: unknown) {
-        let message = "Initialization failed";
-        if (err instanceof Error) {
-          message = err.message;
-        }
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
+
+      try {
+        const result = await dispatch(initAuth()).unwrap();
+
+        console.log("[App] initAuth fulfilled:", result);
+      } catch (error: unknown) {
+
+        const message =
+          error instanceof Error
+            ? error.message
+            : typeof error === "string"
+              ? error
+              : "Initialization failed";
+
         toast.error(message);
       } finally {
-        setReady(true);
+        if (mounted) {
+          setReady(true);
+          console.log("[App] Authentication initialization finished");
+        }
       }
-    }
+    };
 
-    init();
+    void initializeAuth();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-
   if (!ready) {
-    return (
-      <Loading />
-    );
+    return <Loading />;
   }
+
   if (!user?.phone) {
     return (
       <PhoneNumberSetup
@@ -49,7 +67,8 @@ function App() {
           try {
             await dispatch(initAuth()).unwrap();
           } catch (error) {
-            console.error("Failed to refresh user:", error);
+            console.error("[App] Failed to refresh user:", error);
+            toast.error("Failed to refresh your profile.");
           }
         }}
       />
@@ -57,19 +76,17 @@ function App() {
   }
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route index element={<Home />} />
-          <Route path="/my-bids" element={<MyBids />} />
-          <Route path="/bids" element={<Bids />} />
-          <Route path="/profile" element={<Profile />} />
-        </Route>
-        <Route path="/bids/:id" element={<Bid />} />
-      </Routes>
+    <Routes>
+      <Route element={<MainLayout />}>
+        <Route index element={<Home />} />
+        <Route path="/my-bids" element={<MyBids />} />
+        <Route path="/bids" element={<Bids />} />
+        <Route path="/profile" element={<Profile />} />
+      </Route>
 
-    </ThemeProvider>
-  )
+      <Route path="/bids/:id" element={<Bid />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;

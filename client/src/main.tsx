@@ -7,13 +7,17 @@ import { BrowserRouter } from "react-router-dom"
 import { Toaster } from "@/components/ui/sonner"
 import { Provider } from 'react-redux';
 import { store } from './store/store.ts';
+import { ThemeProvider } from "@/components/theme-provider"
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <Provider store={store} >
-        <App />
-        <Toaster />
-      </Provider>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <Provider store={store} >
+          <App />
+          <Toaster />
+        </Provider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
 )

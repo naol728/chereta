@@ -11,6 +11,7 @@ export const initAuth = createAsyncThunk("auth/init", async () => {
   const res = await apiClient.post(`/auth/telegram`, {
     initData: window.Telegram.WebApp.initData,
   });
+  console.log(res);
 
   const data = res.data;
 
