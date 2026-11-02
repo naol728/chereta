@@ -8,6 +8,17 @@ import jwt from "jsonwebtoken";
 import { catchAsync } from "../utils/catchAsync";
 import { AppError } from "../utils/AppError";
 
+const fetchUserData = async (userId: string) => {
+  const { data: user, error: userError } = await supabase
+    .from("users")
+    .select(`*`)
+    .eq("id", userId)
+    .single();
+
+  if (userError || !user) {
+    throw new AppError("User not found", 401);
+  }
+};
 export const telegramAuth = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
@@ -22,6 +33,10 @@ export const telegramAuth = catchAsync(
       if (userError || !user) {
         throw new AppError("User not found", 401);
       }
+
+      return {
+        user,
+      };
     };
 
     // =========================================================
@@ -31,16 +46,17 @@ export const telegramAuth = catchAsync(
       const token = authHeader.split(" ")[1];
 
       try {
-        const payload = jwt.verify(token, env.jwt_secrete) as {
+        const payload = jwt.verify(token, env.JWT_SECRET) as {
           userId: string;
           telegramId?: number;
         };
 
-        const { user } = await fetchUserData(payload.userId);
+        const { user, wagering } = await fetchUserData(payload.userId);
 
         return res.json({
           access_token: token,
           user,
+          wagering,
         });
       } catch (err: any) {
         if (err instanceof AppError) {
@@ -77,7 +93,7 @@ export const telegramAuth = catchAsync(
     let tgUser;
 
     try {
-      tgUser = validateTelegramData(env.bot_token, initData);
+      tgUser = validateTelegramData(env.BOT_TOKEN, initData);
     } catch (err) {
       console.error("Telegram validation error:", err);
 
@@ -123,7 +139,7 @@ export const telegramAuth = catchAsync(
         userId: user.id,
         telegramId: user.telegram_id,
       },
-      env.jwt_secrete,
+      env.JWT_SECRET,
       {
         expiresIn: "7d",
       },
