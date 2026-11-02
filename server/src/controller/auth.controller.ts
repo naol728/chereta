@@ -93,7 +93,7 @@ export const telegramAuth = catchAsync(
     let tgUser;
 
     try {
-      tgUser = validateTelegramData(env.BOT_TOKEN, initData);
+      tgUser = validateTelegramData(env.bot_token, initData);
     } catch (err) {
       console.error("Telegram validation error:", err);
 
