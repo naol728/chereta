@@ -46,17 +46,16 @@ export const telegramAuth = catchAsync(
       const token = authHeader.split(" ")[1];
 
       try {
-        const payload = jwt.verify(token, env.JWT_SECRET) as {
+        const payload = jwt.verify(token, env.jwt_secrete) as {
           userId: string;
           telegramId?: number;
         };
 
-        const { user, wagering } = await fetchUserData(payload.userId);
+        const { user } = await fetchUserData(payload.userId);
 
         return res.json({
           access_token: token,
           user,
-          wagering,
         });
       } catch (err: any) {
         if (err instanceof AppError) {
@@ -139,7 +138,7 @@ export const telegramAuth = catchAsync(
         userId: user.id,
         telegramId: user.telegram_id,
       },
-      env.JWT_SECRET,
+      env.jwt_secrete,
       {
         expiresIn: "7d",
       },
