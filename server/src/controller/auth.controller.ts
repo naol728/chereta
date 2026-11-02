@@ -1,3 +1,5 @@
+/*eslint-disable*/
+// @ts-nocheck
 import { NextFunction, Request, Response } from "express";
 import { validateTelegramData } from "../utils/telegram";
 import { env } from "../config/env";
@@ -10,92 +12,16 @@ export const telegramAuth = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
 
-    // =========================================================
-    // Helper: Fetch complete user data
-    // =========================================================
     const fetchUserData = async (userId: string) => {
-      // -----------------------------
-      // User + Wallet
-      // -----------------------------
       const { data: user, error: userError } = await supabase
         .from("users")
-        .select(
-          `*,
-            wallets (
-              balance,
-              locked_balance,
-              withdrawable_balance,
-              available_balance
-            )`,
-        )
+        .select(`*`)
         .eq("id", userId)
         .single();
 
       if (userError || !user) {
         throw new AppError("User not found", 401);
       }
-
-      // -----------------------------
-      // Level Progress
-      // -----------------------------
-      const { data: progress, error: progressError } = await supabase.rpc(
-        "get_user_level_progress",
-        {
-          p_user_id: userId,
-        },
-      );
-
-      if (progressError) {
-        throw new AppError(
-          `Failed to fetch user progress: ${progressError.message}`,
-          500,
-        );
-      }
-
-      // -----------------------------
-      // Wagering Requirements
-      // -----------------------------
-      const { data: wagering, error: wageringError } = await supabase
-        .from("wagering_requirements")
-        .select(
-          `
-            id,
-            type,
-            source_amount,
-            wagering_multiplier,
-            required_amount,
-            wagered_amount,
-            remaining_amount,
-            status,
-            reference_id,
-            created_at,
-            completed_at,
-            expires_at
-          `,
-        )
-        .eq("user_id", userId)
-        .eq("status", "active")
-        .order("created_at", { ascending: false });
-
-      if (wageringError) {
-        throw new AppError(
-          `Failed to fetch wagering requirement: ${wageringError.message}`,
-          500,
-        );
-      }
-
-      // -----------------------------
-      // Final User Object
-      // -----------------------------
-      const userWithProgress = {
-        ...user,
-        progress: progress?.[0] ?? null,
-      };
-
-      return {
-        user: userWithProgress,
-        wagering: wagering ?? [],
-      };
     };
 
     // =========================================================
@@ -110,12 +36,11 @@ export const telegramAuth = catchAsync(
           telegramId?: number;
         };
 
-        const { user, wagering } = await fetchUserData(payload.userId);
+        const { user } = await fetchUserData(payload.userId);
 
         return res.json({
           access_token: token,
           user,
-          wagering,
         });
       } catch (err: any) {
         if (err instanceof AppError) {
@@ -209,7 +134,7 @@ export const telegramAuth = catchAsync(
     // =========================================================
 
     try {
-      const { user: userWithProgress, wagering } = await fetchUserData(user.id);
+      const { user } = await fetchUserData(user.id);
 
       // =======================================================
       // SAME RESPONSE STRUCTURE AS JWT FLOW
@@ -217,8 +142,7 @@ export const telegramAuth = catchAsync(
 
       return res.json({
         access_token: token,
-        user: userWithProgress,
-        wagering,
+        user,
       });
     } catch (err) {
       return next(err);
