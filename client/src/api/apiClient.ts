@@ -1,7 +1,7 @@
 /*eslint-disable*/
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 
-const BASEURL = import.meta.env.VITE_BACKEND_URL!;
+const BASEURL = "http://localhost:5000";
 
 const apiClient = axios.create({
   baseURL: BASEURL,
@@ -49,7 +49,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
       try {
         const res = await axios.post(`${BASEURL}/auth/telegram`, {
-          initData: window.Telegram?.WebApp?.initData,
+          initData: window.Telegram.WebApp.initData,
         });
 
         const token = res.data?.access_token;
