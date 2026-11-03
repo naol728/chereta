@@ -1,7 +1,7 @@
 /*eslint-disable*/
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 
-const BASEURL = "http://localhost:5000";
+const BASEURL = import.meta.env.VITE_BACKEND_URL;
 
 const apiClient = axios.create({
   baseURL: BASEURL,
