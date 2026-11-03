@@ -8,16 +8,20 @@ import { Toaster } from "@/components/ui/sonner"
 import { Provider } from 'react-redux';
 import { store } from './store/store.ts';
 import { ThemeProvider } from "@/components/theme-provider"
-
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryclient = new QueryClient()
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <Provider store={store} >
-          <App />
-          <Toaster />
-        </Provider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryclient}>
+
+      <BrowserRouter>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <Provider store={store} >
+            <App />
+            <Toaster position='top-center' />
+          </Provider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   </StrictMode>,
 )

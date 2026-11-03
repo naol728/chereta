@@ -1,3 +1,4 @@
+/*eslint-disable*/
 
 import { Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -30,7 +31,6 @@ function App() {
       try {
         const result = await dispatch(initAuth()).unwrap();
 
-        console.log("[App] initAuth fulfilled:", result);
       } catch (error: unknown) {
 
         const message =
@@ -44,7 +44,6 @@ function App() {
       } finally {
         if (mounted) {
           setReady(true);
-          console.log("[App] Authentication initialization finished");
         }
       }
     };
@@ -67,7 +66,6 @@ function App() {
           try {
             await dispatch(initAuth()).unwrap();
           } catch (error) {
-            console.error("[App] Failed to refresh user:", error);
             toast.error("Failed to refresh your profile.");
           }
         }}

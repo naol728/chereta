@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
 import authRoute from "./routes/auth.route";
+import AuctionRoute from "./routes/auction.route";
 import { globalErrorHandler } from "./middleware/globalErrorhandler";
 const app = express();
 
@@ -26,6 +27,7 @@ app.get("/health", (_req, res) => {
   });
 });
 app.use("/auth", authRoute);
+app.use("/auction", AuctionRoute);
 
 // app.get("/", (_, res) => {
 //   res.send("welcome to chereta");

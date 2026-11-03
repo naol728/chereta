@@ -1,5 +1,5 @@
 /*eslint-disable*/
-// @ts-nocheck
+
 import { NextFunction, Request, Response } from "express";
 import { validateTelegramData } from "../utils/telegram";
 import { env } from "../config/env";
@@ -149,7 +149,7 @@ export const telegramAuth = catchAsync(
     // =========================================================
 
     try {
-      const { user } = await fetchUserData(user.id);
+      const { user: completeUser } = await fetchUserData(user.id);
 
       // =======================================================
       // SAME RESPONSE STRUCTURE AS JWT FLOW
@@ -157,7 +157,7 @@ export const telegramAuth = catchAsync(
 
       return res.json({
         access_token: token,
-        user,
+        user: completeUser,
       });
     } catch (err) {
       return next(err);
