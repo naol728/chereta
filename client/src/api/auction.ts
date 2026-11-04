@@ -30,3 +30,42 @@ export const getEndedAuctions = async (params: GetEndedAuctionsParams = {}) => {
 
   return response.data;
 };
+
+export const createPaymentOrder = async (
+  params: { id: string },
+  bidAmount: number,
+) => {
+  const response = await apiClient.post(`/auction/${params.id}/payment-order`, {
+    bid_amount: bidAmount,
+  });
+
+  return response.data;
+};
+
+export const getPendingPaymentOrder = async (params: { id: string }) => {
+  const response = await apiClient.get(
+    `/auction/${params.id}/my-pending-payment-order`,
+  );
+
+  return response.data;
+};
+export const submitPaymentTransaction = async (params: {
+  id: string;
+  transaction_reference: string;
+}) => {
+  const response = await apiClient.post(
+    `/auction/${params.id}/submitpaymenttrxid`,
+    {
+      transaction_reference: params.transaction_reference,
+    },
+  );
+
+  return response.data;
+};
+export const deletePaymentOrder = async (params: { id: string }) => {
+  const response = await apiClient.delete(
+    `/auction/${params.id}/payment-order`,
+  );
+
+  return response.data;
+};

@@ -16,6 +16,7 @@ import { initAuth } from "./store/slice/auth";
 
 import PhoneNumberSetup from "./components/PhoneNumberSetup";
 import Loading from "./components/Loading";
+import PaymentPage from "./pages/user/PaymentPage";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -83,6 +84,8 @@ function App() {
       </Route>
 
       <Route path="/bids/:id" element={<Bid />} />
+      <Route path="/payment/:orderId" element={<PaymentPage />} />
+      <Route path="/payment/:paymentid" element={<PaymentPage />} />
     </Routes>
   );
 }
