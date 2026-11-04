@@ -69,3 +69,7 @@ export const deletePaymentOrder = async (params: { id: string }) => {
 
   return response.data;
 };
+export const getMyAuction = async () => {
+  const response = await apiClient.get("/auction/my-bids");
+  return response.data;
+};

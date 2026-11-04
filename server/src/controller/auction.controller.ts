@@ -920,3 +920,74 @@ export const submitPaymentTransaction = catchAsync(
     });
   },
 );
+
+export const getMyAuction = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return next(new AppError("You must be logged in.", 401));
+    }
+
+    const { data: bids, error } = await supabase
+      .from("auction_bids")
+      .select(
+        `
+        *,
+        auction:auctions!auction_bids_auction_id_fkey (
+          *,
+          item:items!auctions_item_id_fkey (*)
+        )
+      `,
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return next(new AppError("Failed to fetch your auctions.", 500));
+    }
+
+    if (!bids || bids.length === 0) {
+      return res.status(200).json({
+        success: true,
+        results: 0,
+        data: [],
+      });
+    }
+
+    const auctionIds = [...new Set(bids.map((bid) => bid.auction_id))];
+
+    const { data: allBids, error: allBidsError } = await supabase
+      .from("auction_bids")
+      .select("auction_id, bid_amount")
+      .in("auction_id", auctionIds);
+
+    if (allBidsError) {
+      return next(new AppError("Failed to check bid uniqueness.", 500));
+    }
+
+    const bidCounts = new Map<string, number>();
+
+    for (const bid of allBids || []) {
+      const key = `${bid.auction_id}:${Number(bid.bid_amount)}`;
+
+      bidCounts.set(key, (bidCounts.get(key) || 0) + 1);
+    }
+
+    const data = bids.map((bid) => {
+      const key = `${bid.auction_id}:${Number(bid.bid_amount)}`;
+      const count = bidCounts.get(key) || 0;
+
+      return {
+        ...bid,
+        is_unique: count === 1,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      results: data.length,
+      data,
+    });
+  },
+);
