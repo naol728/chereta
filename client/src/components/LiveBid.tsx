@@ -1,8 +1,8 @@
-/*eslint-disable*/
+/* eslint-disable */
 // @ts-nocheck
 import React, { useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom"; // Added useNavigate
+import { useNavigate } from "react-router-dom";
 import {
     ChevronLeft,
     ChevronRight,
@@ -18,6 +18,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+// ============================================================
+// TYPES
+// ============================================================
+
 type AuctionItem = {
     id: string;
     title: string;
@@ -27,31 +31,49 @@ type AuctionItem = {
     images: string[];
     category: string | null;
     condition: "new" | "used" | "refurbished";
-    status: "draft" | "published" | "archived";
+};
+
+type Auction = {
+    id: string;
+    item_id: string;
+    starting_bid: number;
+    currency: string;
+    starts_at: string;
+    ends_at: string;
+    status: "live";
+    total_bids: number;
+    total_revenue: number;
     created_at: string;
-    updated_at: string;
+    item: AuctionItem | null;
 };
 
 type AuctionItemsResponse = {
-    success: boolean;
-    message: string;
-    data: {
-        items: AuctionItem[];
-        pagination: {
-            total: number;
-            page: number;
-            limit: number;
-            totalPages: number;
-        };
+    auctions: Auction[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+        hasNextPage: boolean;
+        hasPreviousPage: boolean;
     };
 };
+
+// ============================================================
+// HELPERS
+// ============================================================
 
 const formatDate = (date: string) => {
     return new Intl.DateTimeFormat("en-ET", {
         day: "numeric",
         month: "short",
-        year: "numeric",
     }).format(new Date(date));
+};
+
+const formatAmount = (amount: number, currency = "ETB") => {
+    return new Intl.NumberFormat("en-ET", {
+        maximumFractionDigits: 0,
+    }).format(amount) + ` ${currency}`;
 };
 
 const conditionLabel: Record<AuctionItem["condition"], string> = {
@@ -60,32 +82,22 @@ const conditionLabel: Record<AuctionItem["condition"], string> = {
     refurbished: "Refurbished",
 };
 
-const conditionStyles: Record<AuctionItem["condition"], string> = {
-    new: "bg-primary/10 text-primary border-primary/20",
-    used: "bg-muted text-muted-foreground border-border",
-    refurbished: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-};
-
 function getImage(item: AuctionItem) {
     return item.image_url || item.images?.[0] || "";
 }
 
-function ProductImage({
-    item,
-    className = "",
-}: {
-    item: AuctionItem;
-    className?: string;
-}) {
+// ============================================================
+// SUB-COMPONENTS
+// ============================================================
+
+function ProductImage({ item, className = "" }: { item: AuctionItem; className?: string }) {
     const [failed, setFailed] = React.useState(false);
     const image = getImage(item);
 
     if (!image || failed) {
         return (
-            <div
-                className={`flex items-center justify-center bg-muted text-muted-foreground ${className}`}
-            >
-                <Package className="h-12 w-12 opacity-40" />
+            <div className={`flex items-center justify-center bg-muted text-muted-foreground ${className}`}>
+                <Package className="h-8 w-8 opacity-40" />
             </div>
         );
     }
@@ -103,20 +115,24 @@ function ProductImage({
 
 function ProductSkeleton() {
     return (
-        <div className="w-[82vw] min-w-[82vw] snap-start overflow-hidden rounded-2xl border bg-card sm:w-[300px] sm:min-w-[300px]">
-            <div className="h-[190px] animate-pulse bg-muted" />
-            <div className="space-y-3 p-4">
+        <div className="w-[65vw] min-w-[65vw] snap-start overflow-hidden rounded-2xl border border-border bg-card sm:w-[260px] sm:min-w-[260px]">
+            <div className="h-[130px] animate-pulse bg-muted sm:h-[150px]" />
+            <div className="space-y-2 p-3">
                 <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
                 <div className="h-3 w-full animate-pulse rounded bg-muted" />
-                <div className="h-10 w-full animate-pulse rounded-xl bg-muted" />
+                <div className="h-10 w-full animate-pulse rounded-lg bg-muted mt-3" />
             </div>
         </div>
     );
 }
 
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
+
 export default function LiveBid() {
     const sliderRef = useRef<HTMLDivElement>(null);
-    const navigate = useNavigate(); // Initialize navigation
+    const navigate = useNavigate();
 
     const {
         data: response,
@@ -124,103 +140,86 @@ export default function LiveBid() {
         isError,
         refetch,
         isFetching,
-    } = useQuery({
+    } = useQuery<AuctionItemsResponse>({
         queryKey: ["getAuctionItems"],
         queryFn: async () => {
-            // Fetching a larger limit to display a good carousel
-            const result = await getAuctionItems({
-                page: 1,
-                limit: 15,
-            });
-
-            const payload = result?.data?.data ?? result?.data ?? result;
-            return payload as AuctionItemsResponse;
+            const result = await getAuctionItems({ page: 1, limit: 15 });
+            return result.data as AuctionItemsResponse;
         },
         staleTime: 30_000,
     });
 
-    const items = response?.items ?? [];
+    const auctions = response?.auctions ?? [];
 
     const scroll = (direction: "left" | "right") => {
         sliderRef.current?.scrollBy({
-            left: direction === "right" ? 320 : -320,
+            left: direction === "right" ? 280 : -280, // Adjusted scroll distance for smaller cards
             behavior: "smooth",
         });
     };
 
-    const handleViewProduct = (id: string) => {
-        // Telegram haptic feedback
+    const handleViewProduct = (auctionId: string) => {
         if (typeof window !== "undefined") {
             window.Telegram?.WebApp?.HapticFeedback?.impactOccurred("light");
         }
-        // Redirect to the specific bid route
-        navigate(`/bids/${id}`);
+        navigate(`/bids/${auctionId}`);
     };
 
     return (
-        <section
-            className="w-full bg-background px-4 pb-6 pt-5 text-foreground overscroll-x-contain"
-            style={{
-                paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)",
-                paddingBottom: "calc(env(safe-area-inset-bottom) + 1.5rem)",
-            }}
-        >
+        <section className="relative w-full bg-background px-3 pb-6 pt-4 text-foreground">
             <div className="mx-auto w-full max-w-5xl">
 
-                {/* Header */}
-                <div className="mb-5 flex items-end justify-between gap-3">
+                {/* Header Section */}
+                <div className="mb-3 flex items-end justify-between gap-2">
                     <div className="min-w-0">
-                        <div className="mb-1.5 flex items-center gap-2">
-                            <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                        <div className="mb-1 flex items-center gap-1.5">
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-destructive">
                                 በቀጥታ ጨረታ
                             </p>
                         </div>
-
-                        <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+                        <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
                             አሁን ቅረብ
                         </h2>
                     </div>
 
-                    {/* Controls: Refresh & Carousel Arrows */}
-                    <div className="flex shrink-0 items-center gap-2">
+                    {/* Controls Area */}
+                    <div className="flex shrink-0 items-center gap-1.5">
                         <div className="hidden items-center gap-1 sm:flex">
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-8 w-8 rounded-full"
+                                className="h-7 w-7 rounded-full border-border bg-card"
                                 onClick={() => scroll("left")}
-                                aria-label="Previous products"
+                                aria-label="Previous auctions"
                             >
-                                <ChevronLeft className="h-4 w-4" />
+                                <ChevronLeft className="h-3.5 w-3.5" />
                             </Button>
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-8 w-8 rounded-full"
+                                className="h-7 w-7 rounded-full border-border bg-card"
                                 onClick={() => scroll("right")}
-                                aria-label="Next products"
+                                aria-label="Next auctions"
                             >
-                                <ChevronRight className="h-4 w-4" />
+                                <ChevronRight className="h-3.5 w-3.5" />
                             </Button>
                         </div>
 
                         <Button
                             variant="outline"
                             size="icon"
-                            className="h-9 w-9 rounded-full ml-1"
+                            className="h-8 w-8 rounded-full border-border bg-card"
                             onClick={() => refetch()}
                             disabled={isFetching}
-                            aria-label="Refresh products"
+                            aria-label="Refresh auctions"
                         >
-                            <RefreshCw
-                                className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
-                            />
+                            <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
                         </Button>
                     </div>
                 </div>
 
-                {/* Loading Skeleton */}
+                {/* Loading Skeletons */}
                 {isLoading && (
                     <div className="flex snap-x gap-3 overflow-hidden">
                         {Array.from({ length: 3 }).map((_, index) => (
@@ -231,100 +230,122 @@ export default function LiveBid() {
 
                 {/* Error State */}
                 {isError && !isLoading && (
-                    <Card className="rounded-2xl border-destructive/20 bg-card">
-                        <CardContent className="flex flex-col items-center px-5 py-8 text-center">
-                            <RefreshCw className="mb-3 h-8 w-8 text-destructive" />
-                            <h3 className="font-bold">Unable to load products</h3>
-                            <Button onClick={() => refetch()} className="mt-4 rounded-xl" size="sm">
+                    <Card className="rounded-xl border-destructive/20 bg-card">
+                        <CardContent className="flex flex-col items-center px-4 py-6 text-center">
+                            <RefreshCw className="mb-2 h-6 w-6 text-destructive" />
+                            <h3 className="text-sm font-bold">Unable to load</h3>
+                            <Button onClick={() => refetch()} className="mt-3 h-8 rounded-lg px-4 text-xs" size="sm">
                                 Try again
                             </Button>
                         </CardContent>
                     </Card>
                 )}
 
+                {/* Empty State */}
+                {!isLoading && !isError && auctions.length === 0 && (
+                    <Card className="rounded-xl border-border bg-card">
+                        <CardContent className="flex flex-col items-center px-4 py-8 text-center">
+                            <Package className="mb-2 h-6 w-6 text-muted-foreground opacity-50" />
+                            <h3 className="text-sm font-bold">No live auctions</h3>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                Check back later!
+                            </p>
+                        </CardContent>
+                    </Card>
+                )}
+
                 {/* Main Horizontal Carousel */}
-                {!isLoading && !isError && items.length > 0 && (
+                {!isLoading && !isError && auctions.length > 0 && (
                     <div
                         ref={sliderRef}
-                        className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth pb-4 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4"
+                        className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth pb-4 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                     >
-                        {items.map((item) => (
-                            <Card
-                                key={item.id}
-                                className="w-[82vw] min-w-[82vw] snap-start gap-0 overflow-hidden rounded-2xl border-border bg-card py-0 shadow-sm transition-all sm:w-[300px] sm:min-w-[300px]"
-                            >
-                                {/* Product Image & Badges */}
-                                <div className="relative h-[190px] overflow-hidden bg-muted sm:h-[210px]">
-                                    <ProductImage
-                                        item={item}
-                                        className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                                    />
+                        {auctions.map((auction) => {
+                            const item = auction.item;
+                            if (!item) return null;
 
-                                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
+                            return (
+                                <Card
+                                    key={auction.id}
+                                    className="w-[65vw] min-w-[65vw] snap-start gap-0 overflow-hidden rounded-2xl border-border bg-card py-0 shadow-sm transition-all sm:w-[260px] sm:min-w-[260px]"
+                                >
+                                    {/* Image Area */}
+                                    <div className="relative h-[130px] overflow-hidden bg-muted sm:h-[150px]">
+                                        <ProductImage
+                                            item={item}
+                                            className="h-full w-full object-cover"
+                                        />
 
-                                    {item.category && (
-                                        <Badge className="absolute left-3 top-3 rounded-full border border-white/20 bg-background/90 px-3 py-1 text-[10px] font-semibold text-foreground shadow-sm hover:bg-background/90">
-                                            {item.category}
-                                        </Badge>
-                                    )}
+                                        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
 
-                                    <Badge
-                                        variant="outline"
-                                        className={`absolute right-3 top-3 rounded-full border px-2.5 py-1 text-[10px] font-semibold shadow-sm ${conditionStyles[item.condition]
-                                            }`}
-                                    >
-                                        {conditionLabel[item.condition]}
-                                    </Badge>
-                                </div>
-
-                                {/* Product Details */}
-                                <CardContent className="p-4">
-                                    <h3 className="truncate text-base font-bold tracking-tight">
-                                        {item.title}
-                                    </h3>
-
-                                    <p className="mt-1 line-clamp-2 min-h-9 text-xs leading-relaxed text-muted-foreground">
-                                        {item.description || "Discover this product on Chereta."}
-                                    </p>
-
-                                    <div className="my-3 flex items-center justify-between border-y border-border/70 py-3">
-                                        <div className="min-w-0">
-                                            <p className="text-[10px] text-muted-foreground">Condition</p>
-                                            <p className="mt-0.5 text-xs font-semibold">
-                                                {conditionLabel[item.condition]}
-                                            </p>
+                                        {/* Live Indicator */}
+                                        <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-destructive px-2 py-0.5 text-[9px] font-bold text-destructive-foreground shadow-sm">
+                                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                                            LIVE
                                         </div>
 
-                                        <div className="h-8 w-px bg-border" />
-
-                                        <div className="min-w-0 text-right">
-                                            <p className="text-[10px] text-muted-foreground">Listed on</p>
-                                            <p className="mt-0.5 text-xs font-semibold">
-                                                {formatDate(item.created_at)}
-                                            </p>
-                                        </div>
+                                        {item.condition && (
+                                            <div className="absolute right-2 top-2">
+                                                <Badge className="rounded-full bg-background/90 text-foreground text-[9px] font-bold px-2 py-0.5 hover:bg-background/90">
+                                                    {conditionLabel[item.condition]}
+                                                </Badge>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <Button
-                                        className="h-11 w-full rounded-xl text-sm font-bold active:scale-[0.98]"
-                                        onClick={() => handleViewProduct(item.id)}
-                                    >
-                                        <Gavel className="mr-2 h-4 w-4" />
-                                        View product
-                                        <ArrowUpRight className="ml-auto h-4 w-4" />
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                    {/* Content Area */}
+                                    <CardContent className="flex flex-col p-3">
+                                        <h3 className="line-clamp-1 text-sm font-bold tracking-tight text-foreground">
+                                            {item.title}
+                                        </h3>
+
+                                        <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
+                                            {item.description || "Discover this product."}
+                                        </p>
+
+                                        {/* Price & Stats */}
+                                        <div className="mt-2 flex items-center justify-between border-t border-border/50 pt-2">
+                                            <div>
+                                                <p className="text-[9px] font-medium uppercase text-muted-foreground">
+                                                    Bid
+                                                </p>
+                                                <p className="text-xs font-bold text-primary">
+                                                    {formatAmount(auction.starting_bid, auction.currency)}
+                                                </p>
+                                            </div>
+
+                                            <div className="text-right">
+                                                <p className="text-[9px] font-medium uppercase text-muted-foreground">
+                                                    Bids
+                                                </p>
+                                                <p className="text-xs font-bold text-foreground">
+                                                    {auction.total_bids}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Action Button */}
+                                        <Button
+                                            className="mt-2 h-8 w-full rounded-lg text-xs font-bold active:scale-[0.98]"
+                                            onClick={() => handleViewProduct(auction.id)}
+                                        >
+                                            <Gavel className="mr-1.5 h-3 w-3" />
+                                            View
+                                            <ArrowUpRight className="ml-auto h-3 w-3 opacity-70" />
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
                     </div>
                 )}
 
                 {/* Mobile Swipe Hint */}
-                {!isLoading && items.length > 1 && (
-                    <div className="mt-1 flex items-center justify-center gap-2 text-[10px] text-muted-foreground sm:hidden">
-                        <ChevronLeft className="h-3.5 w-3.5" />
+                {!isLoading && auctions.length > 1 && (
+                    <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] text-muted-foreground sm:hidden">
+                        <ChevronLeft className="h-3 w-3" />
                         <span>ወደ ግራ ወይም ቀኝ ያንሸራትቱ</span>
-                        <ChevronRight className="h-3.5 w-3.5" />
+                        <ChevronRight className="h-3 w-3" />
                     </div>
                 )}
             </div>
