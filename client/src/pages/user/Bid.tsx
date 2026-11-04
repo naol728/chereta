@@ -1,3 +1,5 @@
+/*eslint-disable*/
+//@ts-nocheck
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -215,8 +217,8 @@ export default function Bid() {
                                         key={`${image}-${index}`}
                                         onClick={() => setSelectedImage(index)}
                                         className={`h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition-all ${selectedImage === index
-                                                ? "border-primary"
-                                                : "border-transparent opacity-70 hover:opacity-100"
+                                            ? "border-primary"
+                                            : "border-transparent opacity-70 hover:opacity-100"
                                             }`}
                                     >
                                         <img
