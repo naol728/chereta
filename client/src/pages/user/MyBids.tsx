@@ -10,7 +10,6 @@ import {
     Copy,
     Trophy,
     Package,
-    Loader2,
     RefreshCw,
     CheckCircle2
 } from "lucide-react";
@@ -18,6 +17,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ============================================================
 // HELPERS
@@ -29,6 +29,69 @@ const formatAmount = (amount: number, currency = "ETB") => {
         maximumFractionDigits: 2,
     }).format(amount) + ` ${currency}`;
 };
+
+// ============================================================
+// SKELETON COMPONENTS
+// ============================================================
+
+function SummarySkeleton() {
+    return (
+        <div className="mb-4 flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-sm">
+            <div className="flex flex-col items-center gap-1.5">
+                <Skeleton className="h-4 w-6" />
+                <Skeleton className="h-2 w-8" />
+            </div>
+            <div className="h-8 w-px bg-border" />
+            <div className="flex flex-col items-center gap-1.5">
+                <Skeleton className="h-4 w-6" />
+                <Skeleton className="h-2 w-8" />
+            </div>
+            <div className="h-8 w-px bg-border" />
+            <div className="flex flex-col items-center gap-1.5">
+                <Skeleton className="h-4 w-6" />
+                <Skeleton className="h-2 w-8" />
+            </div>
+        </div>
+    );
+}
+
+function BidCardSkeleton() {
+    return (
+        <Card className="overflow-hidden rounded-2xl border-border bg-card shadow-sm">
+            <CardContent className="p-3.5">
+                {/* Top: Image, Title, Status */}
+                <div className="flex items-start justify-between gap-2.5">
+                    <div className="flex gap-2.5">
+                        <Skeleton className="h-14 w-14 shrink-0 rounded-lg" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-3 w-32" />
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-4 w-16 rounded-full" />
+                        </div>
+                    </div>
+                    <Skeleton className="h-4 w-4 rounded-full" />
+                </div>
+
+                <div className="my-3 h-px w-full bg-border" />
+
+                {/* Middle: Your Bid & Code */}
+                <div className="flex items-end justify-between gap-2">
+                    <div className="space-y-1.5">
+                        <Skeleton className="h-2 w-16" />
+                        <Skeleton className="h-4 w-24" />
+                    </div>
+                    <Skeleton className="h-2.5 w-20" />
+                </div>
+
+                {/* Bottom: Winning Amount */}
+                <div className="mt-3 space-y-1.5">
+                    <Skeleton className="h-2 w-20" />
+                    <Skeleton className="h-5 w-28" />
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 // ============================================================
 // MAIN COMPONENT
@@ -43,7 +106,6 @@ export default function MyBids() {
         queryFn: getMyAuction
     });
 
-    // Safely extract the array
     const bids = Array.isArray(data?.data) ? data.data : [];
 
     // Calculate summary stats safely
@@ -63,13 +125,9 @@ export default function MyBids() {
         return true;
     });
 
-    if (isLoading) {
-        return (
-            <div className="flex min-h-[50vh] items-center justify-center bg-background">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-        );
-    }
+    // ============================================================
+    // ERROR STATE
+    // ============================================================
 
     if (error) {
         return (
@@ -82,6 +140,44 @@ export default function MyBids() {
             </div>
         );
     }
+
+    // ============================================================
+    // LOADING SKELETON STATE
+    // ============================================================
+
+    if (isLoading) {
+        return (
+            <div className="min-h-[100dvh] w-full bg-background p-3 pb-24 font-sans text-foreground">
+                {/* Header Skeleton */}
+                <div className="mb-3 space-y-2">
+                    <Skeleton className="h-2.5 w-24" />
+                    <Skeleton className="h-5 w-48" />
+                </div>
+
+                {/* Summary Skeleton */}
+                <SummarySkeleton />
+
+                {/* Filter Pills Skeleton */}
+                <div className="mb-4 flex gap-1.5 overflow-hidden">
+                    <Skeleton className="h-7 w-16 rounded-full shrink-0" />
+                    <Skeleton className="h-7 w-14 rounded-full shrink-0" />
+                    <Skeleton className="h-7 w-24 rounded-full shrink-0" />
+                    <Skeleton className="h-7 w-20 rounded-full shrink-0" />
+                </div>
+
+                {/* Bid Cards Skeleton */}
+                <div className="flex flex-col gap-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <BidCardSkeleton key={i} />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    // ============================================================
+    // MAIN UI
+    // ============================================================
 
     return (
         <div className="min-h-[100dvh] w-full bg-background p-3 pb-24 font-sans text-foreground">
@@ -147,8 +243,6 @@ export default function MyBids() {
                         const item = bid?.auction?.item;
                         if (!item) return null;
 
-                        // Only navigate if it's NOT unique (meaning it was lost/ended)
-                        // OR you can change this to navigate if the auction has ended
                         const canNavigate = bid.is_unique === false;
 
                         return (

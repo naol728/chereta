@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import {
   User as UserIcon, Phone, CalendarDays, LogOut, Copy, Loader2, ShieldCheck,
   ChevronRight, Gift, Users, Globe, Moon, Check, Settings, Share2, Sparkles, Link2, Ticket,
+  Fingerprint, // Added for Telegram ID
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -21,7 +22,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { ModeToggle } from "@/components/mode-toggle";
-
 import PreviousUserBid from "./PreviosUserBid";
 
 const LANGUAGES = [
@@ -66,14 +66,14 @@ export default function Profile() {
     }
   };
 
-  const handleCopy = async () => {
-    if (!referralLink) return toast.error("Referral link is not available.");
+  const handleCopy = async (text: string) => {
+    if (!text) return toast.error("Nothing to copy.");
     try {
-      await navigator.clipboard.writeText(referralLink);
-      toast.success("Referral link copied!");
+      await navigator.clipboard.writeText(text);
+      toast.success("Copied!");
       telegram?.HapticFeedback?.notificationOccurred("success");
     } catch {
-      toast.error("Unable to copy referral link.");
+      toast.error("Unable to copy.");
     }
   };
 
@@ -123,7 +123,7 @@ export default function Profile() {
               <h1 className="text-xl font-extrabold tracking-tight">{t("profile.title", "My Profile")}</h1>
               <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-[9px]">ACCOUNT</Badge>
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">Manage your personal information and settings.</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Your personal information.</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-2.5">
             <Settings className="h-5 w-5 text-muted-foreground" />
@@ -181,12 +181,12 @@ export default function Profile() {
               <div className="flex items-center gap-2 rounded-xl border border-border bg-background p-2.5">
                 <Link2 className="h-4 w-4 shrink-0 text-primary" />
                 <p className="min-w-0 flex-1 truncate text-[11px] font-medium text-muted-foreground">{referralLink || "Referral link unavailable"}</p>
-                <Button variant="ghost" size="icon" disabled={!referralLink} onClick={handleCopy} className="h-7 w-7 shrink-0 rounded-lg">
+                <Button variant="ghost" size="icon" disabled={!referralLink} onClick={() => handleCopy(referralLink)} className="h-7 w-7 shrink-0 rounded-lg">
                   <Copy className="h-3.5 w-3.5" />
                 </Button>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" disabled={!referralLink} onClick={handleCopy} className="h-10 rounded-xl text-xs font-bold">
+                <Button variant="outline" disabled={!referralLink} onClick={() => handleCopy(referralLink)} className="h-10 rounded-xl text-xs font-bold">
                   <Copy className="mr-2 h-3.5 w-3.5" /> Copy Link
                 </Button>
                 <Button disabled={!referralLink} onClick={handleShareReferral} className="h-10 rounded-xl text-xs font-bold shadow-sm">
@@ -202,6 +202,27 @@ export default function Profile() {
           <div className="px-1"><h3 className="text-sm font-bold">Account Information</h3></div>
           <Card className="overflow-hidden rounded-2xl border-border shadow-sm">
             <CardContent className="divide-y divide-border p-0">
+
+              {/* TELEGRAM ID (NEW) */}
+              <div className="flex items-center gap-3 p-3.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Fingerprint className="h-4 w-4" /></div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-medium text-muted-foreground">Telegram ID</p>
+                  <p className="mt-0.5 font-mono text-xs font-bold tracking-wider">{user.telegram_id || "Not available"}</p>
+                </div>
+                {user.telegram_id && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground"
+                    onClick={() => handleCopy(String(user.telegram_id))}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+
+              {/* PHONE */}
               <div className="flex items-center gap-3 p-3.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Phone className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
@@ -209,6 +230,8 @@ export default function Profile() {
                   <p className="mt-0.5 truncate text-xs font-semibold">{user.phone || "Not provided"}</p>
                 </div>
               </div>
+
+              {/* REFERRAL ID */}
               <div className="flex items-center gap-3 p-3.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Gift className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
@@ -216,14 +239,13 @@ export default function Profile() {
                   <p className="mt-0.5 font-mono text-xs font-bold tracking-wider">{user.referral_id || "Not available"}</p>
                 </div>
                 {user.referral_id && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={async () => {
-                    try { await navigator.clipboard.writeText(user.referral_id); toast.success("Referral ID copied!"); }
-                    catch { toast.error("Unable to copy referral ID."); }
-                  }}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleCopy(user.referral_id)}>
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
                 )}
               </div>
+
+              {/* JOINED DATE */}
               <div className="flex items-center gap-3 p-3.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><CalendarDays className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
@@ -235,9 +257,7 @@ export default function Profile() {
           </Card>
         </section>
 
-        {/* ================================================== */}
-        {/* PREVIOUS AUCTIONS SECTION (ADDED HERE) */}
-        {/* ================================================== */}
+        {/* PREVIOUS AUCTIONS SECTION */}
         <section className="pt-2">
           <PreviousUserBid />
         </section>
@@ -307,7 +327,7 @@ export default function Profile() {
             <p className="text-xs font-extrabold tracking-wide">CHERETA</p>
           </div>
           <p className="text-[10px] text-muted-foreground">Your marketplace, your opportunity.</p>
-          <p className="pt-1 text-[9px] text-muted-foreground/60">Version 1.0.0</p>
+          <p className="pt-1 text-[9px] text-muted-foreground/60">Version 1.0.1</p>
         </div>
 
       </div>

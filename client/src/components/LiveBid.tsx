@@ -18,6 +18,7 @@ import { getAuctionItems } from "@/api/auction";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ============================================================
 // TYPES
@@ -157,14 +158,41 @@ function ProductImage({ item, className = "" }: { item: AuctionItem; className?:
     );
 }
 
+// Skeleton that matches the exact card dimensions
 function ProductSkeleton() {
     return (
         <div className="w-[65vw] min-w-[65vw] snap-start overflow-hidden rounded-2xl border border-border bg-card sm:w-[260px] sm:min-w-[260px]">
-            <div className="h-[130px] animate-pulse bg-muted sm:h-[150px]" />
-            <div className="space-y-2 p-3">
-                <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
-                <div className="h-3 w-full animate-pulse rounded bg-muted" />
-                <div className="h-10 w-full animate-pulse rounded-lg bg-muted mt-3" />
+            {/* Image Skeleton */}
+            <Skeleton className="h-[130px] w-full rounded-none sm:h-[150px]" />
+
+            {/* Content Skeleton */}
+            <div className="space-y-2.5 p-3">
+                {/* Title */}
+                <Skeleton className="h-4 w-3/4" />
+
+                {/* Description */}
+                <Skeleton className="h-3 w-full" />
+
+                {/* Countdown */}
+                <Skeleton className="h-3 w-1/3" />
+
+                {/* Divider */}
+                <div className="border-t border-border/50 pt-2 mt-2 space-y-2">
+                    {/* Bid & Bids row */}
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <Skeleton className="h-2 w-8" />
+                            <Skeleton className="h-4 w-16" />
+                        </div>
+                        <div className="space-y-1 flex flex-col items-end">
+                            <Skeleton className="h-2 w-8" />
+                            <Skeleton className="h-4 w-10" />
+                        </div>
+                    </div>
+
+                    {/* Button */}
+                    <Skeleton className="h-8 w-full rounded-lg" />
+                </div>
             </div>
         </div>
     );
@@ -263,7 +291,7 @@ export default function LiveBid() {
                     </div>
                 </div>
 
-                {/* Loading Skeletons */}
+                {/* Loading Skeletons (Carousel) */}
                 {isLoading && (
                     <div className="flex snap-x gap-3 overflow-hidden">
                         {Array.from({ length: 3 }).map((_, index) => (
@@ -347,7 +375,7 @@ export default function LiveBid() {
                                             {item.description || "Discover this product."}
                                         </p>
 
-                                        {/* COUNTDOWN TIMER (Placed below description) */}
+                                        {/* COUNTDOWN TIMER */}
                                         <div className="mt-1.5">
                                             <CountdownTimer endsAt={auction.ends_at} />
                                         </div>
