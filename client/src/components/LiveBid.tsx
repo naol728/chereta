@@ -1,6 +1,6 @@
 /* eslint-disable */
 // @ts-nocheck
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,6 +10,7 @@ import {
     Gavel,
     Package,
     ArrowUpRight,
+    Clock,
 } from "lucide-react";
 
 import { getAuctionItems } from "@/api/auction";
@@ -63,13 +64,6 @@ type AuctionItemsResponse = {
 // HELPERS
 // ============================================================
 
-const formatDate = (date: string) => {
-    return new Intl.DateTimeFormat("en-ET", {
-        day: "numeric",
-        month: "short",
-    }).format(new Date(date));
-};
-
 const formatAmount = (amount: number, currency = "ETB") => {
     return new Intl.NumberFormat("en-ET", {
         maximumFractionDigits: 0,
@@ -86,9 +80,59 @@ function getImage(item: AuctionItem) {
     return item.image_url || item.images?.[0] || "";
 }
 
+// Calculate remaining time parts (Days, Hours, Minutes, Seconds)
+function getTimeRemaining(endTime: string) {
+    const total = Date.parse(endTime) - Date.parse(new Date().toString());
+    const seconds = Math.floor((total / 1000) % 60);
+    const minutes = Math.floor((total / 1000 / 60) % 60);
+    const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(total / (1000 * 60 * 60 * 24));
+
+    return {
+        total,
+        days: days > 0 ? days : 0,
+        hours: hours > 0 ? hours : 0,
+        minutes: minutes > 0 ? minutes : 0,
+        seconds: seconds > 0 ? seconds : 0,
+    };
+}
+
 // ============================================================
 // SUB-COMPONENTS
 // ============================================================
+
+function CountdownTimer({ endsAt }: { endsAt: string }) {
+    const [timeLeft, setTimeLeft] = useState(getTimeRemaining(endsAt));
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTimeLeft(getTimeRemaining(endsAt));
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [endsAt]);
+
+    if (timeLeft.total <= 0) {
+        return (
+            <div className="flex items-center gap-1 text-[10px] font-bold text-destructive">
+                <Clock className="h-3 w-3" />
+                Auction Ended
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex items-center gap-1 text-[10px] font-semibold text-primary">
+            <Clock className="h-3 w-3" />
+            <span className="tabular-nums">
+                {timeLeft.days > 0 && `${timeLeft.days}d `}
+                {String(timeLeft.hours).padStart(2, '0')}:
+                {String(timeLeft.minutes).padStart(2, '0')}:
+                {String(timeLeft.seconds).padStart(2, '0')}
+            </span>
+        </div>
+    );
+}
 
 function ProductImage({ item, className = "" }: { item: AuctionItem; className?: string }) {
     const [failed, setFailed] = React.useState(false);
@@ -153,7 +197,7 @@ export default function LiveBid() {
 
     const scroll = (direction: "left" | "right") => {
         sliderRef.current?.scrollBy({
-            left: direction === "right" ? 280 : -280, // Adjusted scroll distance for smaller cards
+            left: direction === "right" ? 280 : -280,
             behavior: "smooth",
         });
     };
@@ -302,6 +346,11 @@ export default function LiveBid() {
                                         <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
                                             {item.description || "Discover this product."}
                                         </p>
+
+                                        {/* COUNTDOWN TIMER (Placed below description) */}
+                                        <div className="mt-1.5">
+                                            <CountdownTimer endsAt={auction.ends_at} />
+                                        </div>
 
                                         {/* Price & Stats */}
                                         <div className="mt-2 flex items-center justify-between border-t border-border/50 pt-2">

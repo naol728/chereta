@@ -55,6 +55,62 @@ const formatAmount = (amount: number, currency = "ETB") => {
     );
 };
 
+function getTimeRemaining(endTime: string) {
+    const total = Date.parse(endTime) - Date.parse(new Date().toString());
+    const seconds = Math.floor((total / 1000) % 60);
+    const minutes = Math.floor((total / 1000 / 60) % 60);
+    const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(total / (1000 * 60 * 60 * 24));
+
+    return {
+        total,
+        days: days > 0 ? days : 0,
+        hours: hours > 0 ? hours : 0,
+        minutes: minutes > 0 ? minutes : 0,
+        seconds: seconds > 0 ? seconds : 0,
+    };
+}
+
+// ============================================================
+// COUNTDOWN COMPONENT
+// ============================================================
+
+function CountdownTimer({ endsAt }: { endsAt: string }) {
+    const [timeLeft, setTimeLeft] = useState(getTimeRemaining(endsAt));
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTimeLeft(getTimeRemaining(endsAt));
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [endsAt]);
+
+    if (timeLeft.total <= 0) {
+        return (
+            <div className="flex items-center justify-center gap-1.5 rounded-xl border border-destructive/20 bg-destructive/5 py-2 text-xs font-bold text-destructive">
+                <Clock className="h-4 w-4" />
+                Auction Ended
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/5 py-2.5">
+            <Clock className="h-4 w-4 text-primary" />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Ends in:
+            </span>
+            <span className="text-sm font-extrabold tabular-nums text-primary">
+                {timeLeft.days > 0 && `${timeLeft.days}d `}
+                {String(timeLeft.hours).padStart(2, '0')}:
+                {String(timeLeft.minutes).padStart(2, '0')}:
+                {String(timeLeft.seconds).padStart(2, '0')}
+            </span>
+        </div>
+    );
+}
+
 // ============================================================
 // COMPONENT
 // ============================================================
@@ -386,6 +442,9 @@ export default function Bid() {
                             </span>
                         </div>
                     </div>
+
+                    {/* LIVE COUNTDOWN TIMER (Placed right below the stats grid) */}
+                    <CountdownTimer endsAt={auction.ends_at} />
 
                     {/* Product Details */}
 

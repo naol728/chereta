@@ -84,3 +84,13 @@ export const getPreviousAuctions = async (params?: {
 
   return response.data;
 };
+export const getPreviousSetteldAuctions = async (params?: {
+  limit?: number;
+  page?: number;
+}) => {
+  const response = await apiClient.get("/auction/setteld", {
+    params,
+  });
+
+  return response.data;
+};

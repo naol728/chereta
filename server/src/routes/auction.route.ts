@@ -9,6 +9,7 @@ import {
   submitPaymentTransaction,
   getMyAuction,
   getPreviousAuctions,
+  getSetteledAuctions,
 } from "../controller/auction.controller";
 import { requireAuth } from "../middleware/auth";
 const AuctionRoute = express.Router();
@@ -29,4 +30,5 @@ AuctionRoute.get(
 );
 AuctionRoute.get("/my-bids", requireAuth, getMyAuction);
 AuctionRoute.get("/previous", requireAuth, getPreviousAuctions);
+AuctionRoute.get("/setteld", requireAuth, getSetteledAuctions);
 export default AuctionRoute;

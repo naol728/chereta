@@ -1082,6 +1082,87 @@ export const getPreviousAuctions = catchAsync(
     });
   },
 );
-export const getSetteledAuctions=catchAsync((req:Request,res:Response,next:NextFunction)=>{
 
-})
+export const getSetteledAuctions = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const page = Math.max(Number(req.query.page) || 1, 1);
+
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
+
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const {
+      data: winners,
+      error,
+      count,
+    } = await supabase
+      .from("auction_winners")
+      .select(
+        `
+          id,
+          auction_id,
+          winning_amount,
+          created_at,
+
+          winner:users!auction_winners_user_id_fkey (
+            id,
+            username,
+            Fname,
+            Lname
+          ),
+
+          winning_bid:auction_bids!auction_winners_winning_bid_id_fkey (
+            id,
+            bid_amount,
+            paid_at,
+            created_at
+          ),
+
+          auction:auctions!auction_winners_auction_id_fkey (
+            id,
+            currency,
+            starting_bid,
+            starts_at,
+            ends_at,
+            total_bids,
+
+            item:items!auctions_item_id_fkey (
+              id,
+              title,
+              slug,
+              image_url,
+              images,
+              category,
+              condition
+            )
+          )
+        `,
+        { count: "exact" },
+      )
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      return next(new AppError("Failed to fetch latest auction winners.", 500));
+    }
+
+    return res.status(200).json({
+      status: "success",
+      results: winners?.length || 0,
+
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
+        hasNextPage: page * limit < (count || 0),
+        hasPreviousPage: page > 1,
+      },
+
+      data: {
+        winners: winners || [],
+      },
+    });
+  },
+);
