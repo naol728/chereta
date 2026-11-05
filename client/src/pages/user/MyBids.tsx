@@ -126,8 +126,8 @@ export default function MyBids() {
                         key={idx}
                         onClick={() => setActiveFilter(filter.id)}
                         className={`shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-bold transition-colors ${activeFilter === filter.id
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "border border-border bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "border border-border bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground"
                             }`}
                     >
                         {filter.label}
@@ -179,8 +179,8 @@ export default function MyBids() {
 
                                                 {/* Status Badge */}
                                                 <div className={`mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold ${bid.is_unique
-                                                        ? "bg-primary/10 text-primary"
-                                                        : "bg-destructive/10 text-destructive"
+                                                    ? "bg-primary/10 text-primary"
+                                                    : "bg-destructive/10 text-destructive"
                                                     }`}>
                                                     {bid.is_unique ? (
                                                         <Trophy className="h-2.5 w-2.5" />
