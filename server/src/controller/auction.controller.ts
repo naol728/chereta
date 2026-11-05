@@ -991,3 +991,97 @@ export const getMyAuction = catchAsync(
     });
   },
 );
+
+export const getPreviousAuctions = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return next(new AppError("You must be logged in.", 401));
+    }
+
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
+
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const {
+      data: winners,
+      error,
+      count,
+    } = await supabase
+      .from("auction_winners")
+      .select(
+        `
+          *,
+          auction:auctions!auction_winners_auction_id_fkey (
+            *,
+            item:items!auctions_item_id_fkey (
+              *
+            ),
+            bids:auction_bids!auction_bids_auction_id_fkey (
+              id,
+              bid_amount,
+              created_at,
+              paid_at
+            )
+          ),
+          winning_bid:auction_bids!auction_winners_winning_bid_id_fkey (
+            *
+          )
+        `,
+        { count: "exact" },
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      return next(new AppError("Failed to fetch previous auctions.", 500));
+    }
+
+    const formattedAuctions = (winners || []).map((winner) => {
+      const auction = winner.auction;
+
+      return {
+        ...winner,
+
+        auction: auction
+          ? {
+              ...auction,
+
+              item: auction.item,
+
+              total_bids: auction.bids?.length || 0,
+
+              winning_bid: winner.winning_bid,
+
+              my_bids: (auction.bids || []).filter(
+                (bid: { id: string }) => bid.id === winner.winning_bid_id,
+              ),
+            }
+          : null,
+      };
+    });
+
+    return res.status(200).json({
+      status: "success",
+      results: formattedAuctions.length,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
+        hasNextPage: page * limit < (count || 0),
+        hasPreviousPage: page > 1,
+      },
+      data: {
+        auctions: formattedAuctions,
+      },
+    });
+  },
+);
+export const getSetteledAuctions=catchAsync((req:Request,res:Response,next:NextFunction)=>{
+
+})

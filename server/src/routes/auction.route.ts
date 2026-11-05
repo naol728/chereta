@@ -8,6 +8,7 @@ import {
   deletePaymentOrder,
   submitPaymentTransaction,
   getMyAuction,
+  getPreviousAuctions,
 } from "../controller/auction.controller";
 import { requireAuth } from "../middleware/auth";
 const AuctionRoute = express.Router();
@@ -27,4 +28,5 @@ AuctionRoute.get(
   getPendingPaymentOrder,
 );
 AuctionRoute.get("/my-bids", requireAuth, getMyAuction);
+AuctionRoute.get("/previous", requireAuth, getPreviousAuctions);
 export default AuctionRoute;

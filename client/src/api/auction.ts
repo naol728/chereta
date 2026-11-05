@@ -73,3 +73,14 @@ export const getMyAuction = async () => {
   const response = await apiClient.get("/auction/my-bids");
   return response.data;
 };
+
+export const getPreviousAuctions = async (params?: {
+  limit?: number;
+  page?: number;
+}) => {
+  const response = await apiClient.get("/auction/previous", {
+    params,
+  });
+
+  return response.data;
+};
