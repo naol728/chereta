@@ -49,19 +49,42 @@ export const getPendingPaymentOrder = async (params: { id: string }) => {
 
   return response.data;
 };
-export const submitPaymentTransaction = async (params: {
-  id: string;
-  transaction_reference: string;
-}) => {
+
+type SubmitPaymentTransactionParams =
+  | {
+      id: string;
+      transaction_reference: string;
+      ticket_code?: never;
+      bid_amount?: never;
+    }
+  | {
+      id: string;
+      ticket_code: string;
+      bid_amount: number;
+      transaction_reference?: never;
+    };
+
+export const submitPaymentTransaction = async (
+  params: SubmitPaymentTransactionParams,
+) => {
+  const body =
+    "ticket_code" in params
+      ? {
+          ticket_code: params.ticket_code,
+          bid_amount: params.bid_amount,
+        }
+      : {
+          transaction_reference: params.transaction_reference,
+        };
+
   const response = await apiClient.post(
     `/auction/${params.id}/submitpaymenttrxid`,
-    {
-      transaction_reference: params.transaction_reference,
-    },
+    body,
   );
 
   return response.data;
 };
+
 export const deletePaymentOrder = async (params: { id: string }) => {
   const response = await apiClient.delete(
     `/auction/${params.id}/payment-order`,

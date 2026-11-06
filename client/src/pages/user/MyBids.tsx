@@ -317,15 +317,7 @@ export default function MyBids() {
                                         </div>
                                     </div>
 
-                                    {/* Bottom: Winning Amount */}
-                                    <div className="mt-2 flex justify-between items-end">
-                                        <div>
-                                            <p className="text-[9px] font-bold text-muted-foreground">{t("myBids.winningBid")}</p>
-                                            <p className="mt-0.5 text-base font-extrabold text-primary">
-                                                {formatAmount(bid.auction?.starting_bid || 0, bid.auction?.currency)}
-                                            </p>
-                                        </div>
-                                    </div>
+
 
                                 </CardContent>
                             </Card>

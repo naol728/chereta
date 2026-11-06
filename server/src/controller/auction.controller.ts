@@ -555,12 +555,8 @@ export const submitPaymentTransaction = catchAsync(
     const auctionId = req.params.id;
     const userId = req.user?.userId;
 
-    const transactionReference = String(req.body.transaction_reference || "")
-      .trim()
-      .toUpperCase();
-
     // ============================================================
-    // 1. VALIDATION
+    // 1. COMMON VALIDATION
     // ============================================================
 
     if (!userId) {
@@ -571,8 +567,113 @@ export const submitPaymentTransaction = catchAsync(
       return next(new AppError("Auction ID is required.", 400));
     }
 
+    // ============================================================
+    // 2. TICKET BID PATH
+    // ============================================================
+
+    const ticketCode = String(req.body.ticket_code || "")
+      .trim()
+      .toUpperCase();
+
+    if (ticketCode) {
+      if (!/^CH-[A-Z0-9]{8}$/.test(ticketCode)) {
+        return next(new AppError("Invalid ticket code format.", 400));
+      }
+
+      const bidAmount = Number(req.body.bid_amount);
+
+      if (!Number.isFinite(bidAmount) || bidAmount < 1) {
+        return next(new AppError("Bid amount must be at least 1 ETB.", 400));
+      }
+
+      const { data: ticketBid, error: ticketBidError } = await supabase.rpc(
+        "place_ticket_bid",
+        {
+          p_auction_id: auctionId,
+          p_user_id: userId,
+          p_ticket_code: ticketCode,
+          p_bid_amount: bidAmount,
+        },
+      );
+      // Delete pending payment orders because the ticket was used instead of payment.
+
+      if (ticketBidError) {
+        console.error("Ticket bid RPC error:", ticketBidError);
+
+        const rpcCode = ticketBidError.code;
+
+        if (rpcCode === "23505") {
+          return next(
+            new AppError(
+              "You have already placed this bid amount in this auction.",
+              409,
+            ),
+          );
+        }
+
+        const ticketErrors: Record<
+          string,
+          { message: string; status: number }
+        > = {
+          P0001: {
+            message: "Invalid ticket bid information.",
+            status: 400,
+          },
+          P0002: {
+            message: "Auction not found.",
+            status: 404,
+          },
+          P0003: {
+            message: "This auction is not currently active.",
+            status: 409,
+          },
+          P0004: {
+            message: "Ticket not found or it does not belong to you.",
+            status: 404,
+          },
+          P0005: {
+            message: "This ticket has already been used or is unavailable.",
+            status: 409,
+          },
+          P0006: {
+            message: "This ticket has expired.",
+            status: 400,
+          },
+        };
+
+        const knownError = ticketErrors[rpcCode];
+
+        if (knownError) {
+          return next(new AppError(knownError.message, knownError.status));
+        }
+
+        return next(
+          new AppError(
+            "Unable to place your ticket bid. Please try again.",
+            500,
+          ),
+        );
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: "Your ticket was used and your bid was placed successfully.",
+        data: ticketBid,
+      });
+    }
+
+    // ============================================================
+    // 3. NORMAL PAYMENT PATH
+    // ============================================================
+
+    const transactionReference = String(req.body.transaction_reference || "")
+      .trim()
+      .toUpperCase();
+
     if (!transactionReference) {
-      return next(new AppError("Transaction reference is required.", 400));
+      return next(
+        new AppError("Transaction reference or ticket code is required.", 400),
+      );
     }
 
     if (!/^[A-Z0-9]{8,20}$/.test(transactionReference)) {
@@ -580,13 +681,13 @@ export const submitPaymentTransaction = catchAsync(
     }
 
     // ============================================================
-    // 2. CHECK ALREADY COMPLETED PAYMENT
+    // 4. CHECK ALREADY COMPLETED PAYMENT
     // ============================================================
 
     const { data: completedOrder, error: completedOrderError } = await supabase
       .from("payment_orders")
       .select(
-        "id, user_id, auction_id, status, transaction_reference,pay_required",
+        "id, user_id, auction_id, status, transaction_reference, pay_required",
       )
       .eq("transaction_reference", transactionReference)
       .eq("user_id", userId)
@@ -603,7 +704,7 @@ export const submitPaymentTransaction = catchAsync(
       return res.status(400).json({
         success: true,
         alreadyProcessed: true,
-        message: "This TransactionId is used .",
+        message: "This transaction ID has already been Used.",
         data: {
           paymentOrderId: completedOrder.id,
           transactionReference: completedOrder.transaction_reference,
@@ -612,8 +713,20 @@ export const submitPaymentTransaction = catchAsync(
     }
 
     // ============================================================
-    // 3. FIND ACTIVE PAYMENT ORDER
+    // 5. FIND ACTIVE PAYMENT ORDER
     // ============================================================
+
+    // Get current Ethiopian time (GMT+3).
+    // Convert it to an ISO UTC timestamp for PostgreSQL comparison.
+    const ethiopianNow = new Date(
+      new Date().toLocaleString("en-US", {
+        timeZone: "Africa/Addis_Ababa",
+      }),
+    );
+
+    const currentTime = new Date(
+      ethiopianNow.getTime() - new Date().getTimezoneOffset() * 60 * 1000,
+    ).toISOString();
 
     const { data: paymentOrder, error: paymentOrderError } = await supabase
       .from("payment_orders")
@@ -647,7 +760,7 @@ export const submitPaymentTransaction = catchAsync(
       .eq("auction_id", auctionId)
       .eq("user_id", userId)
       .eq("status", "awaiting_payment")
-      .gt("expires_at", new Date().toISOString())
+      .gt("expires_at", currentTime)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -667,7 +780,7 @@ export const submitPaymentTransaction = catchAsync(
     }
 
     // ============================================================
-    // 4. CHECK TRANSACTION REFERENCE ATTACHED TO ORDER
+    // 6. CHECK TRANSACTION REFERENCE ATTACHED TO ORDER
     // ============================================================
 
     if (
@@ -683,7 +796,7 @@ export const submitPaymentTransaction = catchAsync(
     }
 
     // ============================================================
-    // 5. CHECK DUPLICATE TRANSACTION REFERENCE
+    // 7. CHECK DUPLICATE TRANSACTION REFERENCE
     // ============================================================
 
     const { data: duplicateOrder, error: duplicateError } = await supabase
@@ -707,7 +820,7 @@ export const submitPaymentTransaction = catchAsync(
     }
 
     // ============================================================
-    // 6. GET PAYMENT METHOD
+    // 8. GET PAYMENT METHOD
     // ============================================================
 
     let paymentMethod = Array.isArray(paymentOrder.payment_method)
@@ -735,9 +848,7 @@ export const submitPaymentTransaction = catchAsync(
         return next(new AppError("Unable to retrieve payment method.", 500));
       }
 
-      if (fallbackMethod) {
-        paymentMethod = fallbackMethod;
-      }
+      paymentMethod = fallbackMethod;
     }
 
     if (!paymentMethod) {
@@ -745,7 +856,7 @@ export const submitPaymentTransaction = catchAsync(
     }
 
     // ============================================================
-    // 7. VALIDATE PAYMENT METHOD
+    // 9. VALIDATE PAYMENT METHOD
     // ============================================================
 
     const settlementAccount = String(paymentMethod.account_number || "").trim();
@@ -767,10 +878,10 @@ export const submitPaymentTransaction = catchAsync(
     }
 
     // ============================================================
-    // 8. VERIFY TRANSACTION WITH VERIFY.ET
+    // 10. VERIFY TRANSACTION WITH VERIFY.ET
     // ============================================================
 
-    const expectedAmount = Number(paymentOrder.auction.participation_fee);
+    const expectedAmount = Number(paymentOrder.auction?.participation_fee);
 
     if (!Number.isFinite(expectedAmount) || expectedAmount <= 0) {
       return next(new AppError("Invalid payment order amount.", 500));
@@ -787,9 +898,7 @@ export const submitPaymentTransaction = catchAsync(
       console.error("Verify.ET request error:", error);
 
       if (error instanceof VerifyEtError) {
-        const providerStatus = error.status;
-
-        if (providerStatus === 429) {
+        if (error.status === 429) {
           return next(
             new AppError(
               error.message ||
@@ -799,7 +908,7 @@ export const submitPaymentTransaction = catchAsync(
           );
         }
 
-        if (providerStatus === 400 || providerStatus === 422) {
+        if (error.status === 400 || error.status === 422) {
           return next(
             new AppError(
               error.message || "Invalid transaction reference.",
@@ -816,15 +925,13 @@ export const submitPaymentTransaction = catchAsync(
         );
       }
 
-      if (axios.isAxiosError(error)) {
-        if (error.code === "ECONNABORTED") {
-          return next(
-            new AppError(
-              "Payment verification timed out. Please try again using the same transaction reference.",
-              503,
-            ),
-          );
-        }
+      if (axios.isAxiosError(error) && error.code === "ECONNABORTED") {
+        return next(
+          new AppError(
+            "Payment verification timed out. Please try again using the same transaction reference.",
+            503,
+          ),
+        );
       }
 
       return next(
@@ -836,7 +943,7 @@ export const submitPaymentTransaction = catchAsync(
     }
 
     // ============================================================
-    // 9. VALIDATE VERIFY.ET RESPONSE
+    // 11. VALIDATE VERIFY.ET RESPONSE
     // ============================================================
 
     const verification = paymentVerify(
@@ -862,7 +969,7 @@ export const submitPaymentTransaction = catchAsync(
     }
 
     // ============================================================
-    // 10. COMPLETE PAYMENT AND CREATE BID ATOMICALLY
+    // 12. COMPLETE NORMAL PAYMENT AND CREATE BID
     // ============================================================
 
     const { data: completion, error: completionError } = await supabase.rpc(
@@ -915,7 +1022,7 @@ export const submitPaymentTransaction = catchAsync(
     }
 
     // ============================================================
-    // 11. SUCCESS RESPONSE
+    // 13. SUCCESS
     // ============================================================
 
     return res.status(200).json({

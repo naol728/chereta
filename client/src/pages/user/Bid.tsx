@@ -32,6 +32,7 @@ import {
     TrendingUp,
     Users,
     Loader2,
+    Lock,
 } from "lucide-react";
 
 // ============================================================
@@ -93,10 +94,7 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
             setTimeLeft(getTimeRemaining(endsAt));
         };
 
-        // Update immediately
         updateCountdown();
-
-        // Update every second
         const timer = window.setInterval(updateCountdown, 1000);
 
         return () => window.clearInterval(timer);
@@ -115,7 +113,7 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
         return (
             <div className="flex items-center justify-center gap-2 rounded-xl border border-destructive/20 bg-destructive/5 py-2.5 text-xs font-bold text-destructive">
                 <Clock className="h-4 w-4" />
-                {t("bidDetail.auctionEnded")}
+                {t("bidDetail.auctionEnded") || "Auction Ended"}
             </div>
         );
     }
@@ -123,11 +121,9 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
     return (
         <div className="flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/5 py-2.5">
             <Clock className="h-4 w-4 text-primary" />
-
             <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {t("bidDetail.endsIn")}
             </span>
-
             <span className="text-sm font-extrabold tabular-nums text-primary">
                 {timeLeft.days > 0 && `${timeLeft.days}d `}
                 {String(timeLeft.hours).padStart(2, "0")}:
@@ -168,9 +164,13 @@ export default function Bid() {
         retry: 1,
     });
 
-    // Access auction data
     const auction = data?.data?.auction;
     const item = auction?.item;
+
+    // Determine if auction has ended
+    const isAuctionEnded = auction?.ends_at
+        ? new Date(auction.ends_at).getTime() < Date.now()
+        : false;
 
     // ============================================================
     // FETCH EXISTING PAYMENT ORDER
@@ -264,17 +264,12 @@ export default function Bid() {
         },
     });
 
-    // ============================================================
-    // HANDLE CONTINUE
-    // ============================================================
-
     const handleContinue = () => {
-        if (!auction || !isValidAmount || paymentMutation.isPending) {
+        if (!auction || !isValidAmount || paymentMutation.isPending || isAuctionEnded) {
             return;
         }
 
         window.Telegram?.WebApp?.HapticFeedback?.impactOccurred("light");
-
         paymentMutation.mutate();
     };
 
@@ -370,9 +365,11 @@ export default function Bid() {
                     </Button>
 
                     <div className="min-w-0 flex-1">
-                        <h1 className="text-sm font-bold">{t("bidDetail.placeYourBid")}</h1>
+                        <h1 className="text-sm font-bold">
+                            {isAuctionEnded ? "Auction Ended" : t("bidDetail.placeYourBid")}
+                        </h1>
                         <p className="text-[10px] text-muted-foreground">
-                            {t("bidDetail.lowestUniqueWins")}
+                            {isAuctionEnded ? "This auction is no longer accepting bids." : t("bidDetail.lowestUniqueWins")}
                         </p>
                     </div>
 
@@ -384,14 +381,13 @@ export default function Bid() {
                 <main className="space-y-4 p-4">
 
                     {/* Product Image Gallery */}
-
                     <div className="space-y-3">
                         <div className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted">
                             {currentImage ? (
                                 <img
                                     src={currentImage}
                                     alt={item.title}
-                                    className="h-full w-full object-cover"
+                                    className={`h-full w-full object-cover ${isAuctionEnded ? "opacity-70 grayscale" : ""}`}
                                 />
                             ) : (
                                 <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
@@ -404,14 +400,20 @@ export default function Bid() {
                                 {item.category || t("bidDetail.general")}
                             </Badge>
 
-                            <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-destructive px-2.5 py-1 text-[10px] font-bold text-destructive-foreground shadow-lg">
-                                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-                                {t("bidDetail.live")}
-                            </div>
+                            {isAuctionEnded ? (
+                                <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold text-muted-foreground shadow-lg">
+                                    <Lock className="h-3 w-3" />
+                                    CLOSED
+                                </div>
+                            ) : (
+                                <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-destructive px-2.5 py-1 text-[10px] font-bold text-destructive-foreground shadow-lg">
+                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                                    {t("bidDetail.live")}
+                                </div>
+                            )}
                         </div>
 
                         {/* Image Thumbnails */}
-
                         {images.length > 1 && (
                             <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                                 {images.map((image, index) => (
@@ -435,7 +437,6 @@ export default function Bid() {
                     </div>
 
                     {/* Auction Stats */}
-
                     <div className="grid grid-cols-3 gap-2">
                         <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-2 text-center shadow-sm">
                             <TrendingUp className="mb-1 h-4 w-4 text-primary" />
@@ -472,7 +473,6 @@ export default function Bid() {
                     <CountdownTimer endsAt={auction.ends_at} />
 
                     {/* Product Details */}
-
                     <section className="space-y-2">
                         <div className="flex items-start justify-between gap-3">
                             <h2 className="text-lg font-bold leading-tight">
@@ -492,7 +492,6 @@ export default function Bid() {
                     <Separator />
 
                     {/* How it works */}
-
                     <Card className="border-primary/20 bg-primary/5 shadow-none">
                         <CardContent className="flex items-start gap-3 p-3">
                             <div className="rounded-lg bg-primary/10 p-1.5">
@@ -511,8 +510,23 @@ export default function Bid() {
                         </CardContent>
                     </Card>
 
-                    {/* If we are redirecting, show a loading state instead of the input */}
-                    {checkingPayment || hasPendingOrder ? (
+                    {/* === AUCTION ENDED STATE === */}
+                    {isAuctionEnded ? (
+                        <Card className="border-destructive/20 bg-destructive/5 shadow-none">
+                            <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+                                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                                    <Lock className="h-6 w-6" />
+                                </div>
+                                <h3 className="text-base font-bold text-foreground">
+                                    This Auction Has Ended
+                                </h3>
+                                <p className="mt-1 max-w-[250px] text-xs text-muted-foreground">
+                                    Bidding is closed for this item. The winner will be determined based on the lowest unique bid.
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ) : checkingPayment || hasPendingOrder ? (
+                        /* Redirecting state */
                         <div className="flex flex-col items-center justify-center py-10 space-y-3">
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
                             <p className="text-sm text-muted-foreground text-center">
@@ -522,9 +536,8 @@ export default function Bid() {
                             </p>
                         </div>
                     ) : (
+                        /* Active Bidding Input */
                         <>
-                            {/* Bid Input */}
-
                             <section className="space-y-3">
                                 <div>
                                     <h3 className="text-sm font-bold">
@@ -565,8 +578,6 @@ export default function Bid() {
                                 </div>
                             </section>
 
-                            {/* Summary */}
-
                             {isValidAmount && (
                                 <Card className="shadow-sm">
                                     <CardContent className="space-y-2 p-3">
@@ -594,7 +605,7 @@ export default function Bid() {
                                             </span>
 
                                             <span className="text-sm font-bold text-primary">
-                                                {formatAmount(auction.participation_fee, auction.currency)}
+                                                {formatAmount(auction.participation_fee || 0, auction.currency)}
                                             </span>
                                         </div>
                                     </CardContent>
@@ -602,8 +613,6 @@ export default function Bid() {
                             )}
                         </>
                     )}
-
-                    {/* Security */}
 
                     <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground pb-4">
                         <ShieldCheck className="h-3.5 w-3.5 text-primary" />
@@ -613,7 +622,8 @@ export default function Bid() {
                 </main>
 
                 {/* Sticky Bottom Action Button */}
-                {!checkingPayment && !hasPendingOrder && (
+                {/* Hide the button if redirecting or auction ended */}
+                {!checkingPayment && !hasPendingOrder && !isAuctionEnded && (
                     <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/50 bg-background/95 p-3 backdrop-blur-md">
                         <div className="mx-auto max-w-lg">
                             <Button
