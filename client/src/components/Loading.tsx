@@ -23,7 +23,7 @@ export default function Loading({
             maxWidth: "max-w-48",
         },
         md: {
-            container: "size-24 sm:size-32", // Reduced slightly for mobile
+            container: "size-24 sm:size-32",
             titleClass: "text-base/snug font-medium",
             subtitleClass: "text-sm/relaxed",
             spacing: "space-y-2",
@@ -43,104 +43,54 @@ export default function Loading({
     return (
         <div
             className={cn(
-                // Full screen layout for Telegram
                 "flex min-h-[100dvh] w-full flex-col items-center justify-center bg-background p-6 text-center font-sans",
                 className
             )}
             style={{
-                // Safe area insets for iOS/Telegram
                 paddingTop: "calc(env(safe-area-inset-top) + 1.5rem)",
                 paddingBottom: "calc(env(safe-area-inset-bottom) + 1.5rem)",
             }}
             {...props}
         >
-            {/* Enhanced Monochrome Loader */}
+            {/* Logo with Breathing Animation */}
             <motion.div
                 className={cn("relative", config.container)}
                 animate={{
-                    scale: [1, 1.02, 1],
+                    scale: [1, 1.04, 1],
                 }}
                 transition={{
-                    duration: 4,
+                    duration: 3,
                     repeat: Number.POSITIVE_INFINITY,
                     ease: [0.4, 0, 0.6, 1],
                 }}
             >
-                {/* Outer elegant ring with shimmer */}
-                <motion.div
-                    className="absolute inset-0 rounded-full"
-                    style={{
-                        background: `conic-gradient(from 0deg, transparent 0deg, currentColor 90deg, transparent 180deg)`,
-                        mask: `radial-gradient(circle at 50% 50%, transparent 35%, black 37%, black 39%, transparent 41%)`,
-                        WebkitMask: `radial-gradient(circle at 50% 50%, transparent 35%, black 37%, black 39%, transparent 41%)`,
-                        opacity: 0.8,
-                    }}
-                    animate={{ rotate: [0, 360] }}
+                <motion.img
+                    src="/logo.jpg"
+                    alt="Chereta Logo"
+                    className="h-full w-full rounded-full object-cover"
+                    animate={{ opacity: [1, 0.85, 1] }}
                     transition={{
                         duration: 3,
                         repeat: Number.POSITIVE_INFINITY,
-                        ease: "linear",
+                        ease: [0.4, 0, 0.6, 1],
                     }}
                 />
-
-                {/* Primary animated ring with gradient */}
+                {/* Subtle glow ring in the logo's green color */}
                 <motion.div
                     className="absolute inset-0 rounded-full"
                     style={{
-                        background: `conic-gradient(from 0deg, transparent 0deg, currentColor 120deg, color-mix(in srgb, currentColor 50%, transparent) 240deg, transparent 360deg)`,
-                        mask: `radial-gradient(circle at 50% 50%, transparent 42%, black 44%, black 48%, transparent 50%)`,
-                        WebkitMask: `radial-gradient(circle at 50% 50%, transparent 42%, black 44%, black 48%, transparent 50%)`,
-                        opacity: 0.9,
+                        boxShadow: "0 0 24px 4px rgba(52, 211, 153, 0.35)",
                     }}
-                    animate={{ rotate: [0, 360] }}
+                    animate={{ opacity: [0.5, 1, 0.5] }}
                     transition={{
-                        duration: 2.5,
+                        duration: 3,
                         repeat: Number.POSITIVE_INFINITY,
                         ease: [0.4, 0, 0.6, 1],
                     }}
                 />
-
-                {/* Secondary elegant ring - counter rotation */}
-                <motion.div
-                    className="absolute inset-0 rounded-full"
-                    style={{
-                        background: `conic-gradient(from 180deg, transparent 0deg, color-mix(in srgb, currentColor 60%, transparent) 45deg, transparent 90deg)`,
-                        mask: `radial-gradient(circle at 50% 50%, transparent 52%, black 54%, black 56%, transparent 58%)`,
-                        WebkitMask: `radial-gradient(circle at 50% 50%, transparent 52%, black 54%, black 56%, transparent 58%)`,
-                        opacity: 0.35,
-                    }}
-                    animate={{ rotate: [0, -360] }}
-                    transition={{
-                        duration: 4,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: [0.4, 0, 0.6, 1],
-                    }}
-                />
-
-                {/* Accent particles */}
-                <motion.div
-                    className="absolute inset-0 rounded-full"
-                    style={{
-                        background: `conic-gradient(from 270deg, transparent 0deg, color-mix(in srgb, currentColor 40%, transparent) 20deg, transparent 40deg)`,
-                        mask: `radial-gradient(circle at 50% 50%, transparent 61%, black 62%, black 63%, transparent 64%)`,
-                        WebkitMask: `radial-gradient(circle at 50% 50%, transparent 61%, black 62%, black 63%, transparent 64%)`,
-                        opacity: 0.5,
-                    }}
-                    animate={{ rotate: [0, 360] }}
-                    transition={{
-                        duration: 3.5,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: "linear",
-                    }}
-                />
-
-                {/* Center dot - small addition to anchor the loader */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-1.5 w-1.5 rounded-full bg-foreground opacity-50" />
-                </div>
             </motion.div>
 
-            {/* Enhanced Typography with Breathing Animation */}
+            {/* Text below logo */}
             <motion.div
                 className={cn("mt-6 text-center", config.spacing, config.maxWidth)}
                 initial={{ opacity: 0, y: 12 }}
@@ -151,12 +101,13 @@ export default function Loading({
                     ease: [0.4, 0, 0.2, 1],
                 }}
             >
-                {/* Clean title */}
+                {/* Title - Chereta in the logo's green color */}
                 <motion.h1
                     className={cn(
                         config.titleClass,
-                        "leading-[1.15] font-black tracking-tight text-foreground"
+                        "leading-[1.15] font-black tracking-tight"
                     )}
+                    style={{ color: "#34d399" }} // Matches the green in the logo
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
@@ -177,7 +128,7 @@ export default function Loading({
                     </motion.span>
                 </motion.h1>
 
-                {/* Clean subtitle */}
+                {/* Subtitle */}
                 <motion.p
                     className={cn(
                         config.subtitleClass,
