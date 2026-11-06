@@ -244,7 +244,7 @@ export const createPaymentOrder = catchAsync(
     // 3. Check whether auction exists
     const { data: auction, error: auctionError } = await supabase
       .from("auctions")
-      .select("id")
+      .select("id,participation_fee")
       .eq("id", auctionId)
       .maybeSingle();
 
@@ -346,6 +346,7 @@ export const createPaymentOrder = catchAsync(
         auction_id: auctionId,
         payment_method_id: selectedMethod.id,
         bid_amount: amount,
+        pay_required: auction.participation_fee,
         currency: "ETB",
         status: "awaiting_payment",
         idempotency_key: randomUUID(),
@@ -435,6 +436,7 @@ export const getPendingPaymentOrder = catchAsync(
           status,
           total_bids,
           total_revenue,
+          participation_fee,
           created_at,
 
           item:items (
@@ -583,7 +585,9 @@ export const submitPaymentTransaction = catchAsync(
 
     const { data: completedOrder, error: completedOrderError } = await supabase
       .from("payment_orders")
-      .select("id, user_id, auction_id, status, transaction_reference")
+      .select(
+        "id, user_id, auction_id, status, transaction_reference,pay_required",
+      )
       .eq("transaction_reference", transactionReference)
       .eq("user_id", userId)
       .eq("auction_id", auctionId)
@@ -635,7 +639,8 @@ export const submitPaymentTransaction = catchAsync(
             instructions
           ),
           auction:auctions (
-            starting_bid
+            starting_bid,
+            participation_fee
           )
         `,
       )
@@ -765,7 +770,7 @@ export const submitPaymentTransaction = catchAsync(
     // 8. VERIFY TRANSACTION WITH VERIFY.ET
     // ============================================================
 
-    const expectedAmount = Number(paymentOrder.auction.starting_bid);
+    const expectedAmount = Number(paymentOrder.auction.participation_fee);
 
     if (!Number.isFinite(expectedAmount) || expectedAmount <= 0) {
       return next(new AppError("Invalid payment order amount.", 500));

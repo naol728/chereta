@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import {
   User as UserIcon, Phone, CalendarDays, LogOut, Copy, Loader2, ShieldCheck,
   ChevronRight, Gift, Users, Globe, Moon, Check, Settings, Share2, Sparkles, Link2, Ticket,
-  Fingerprint, // Added for Telegram ID
+  Fingerprint,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -20,9 +20,12 @@ import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { ModeToggle } from "@/components/mode-toggle";
 import PreviousUserBid from "./PreviosUserBid";
+import { useQuery } from "@tanstack/react-query";
+import { gerMyReferalstat } from "@/api/referal";
 
 const LANGUAGES = [
   { code: "en", label: "English", native: "English" },
@@ -30,7 +33,6 @@ const LANGUAGES = [
   { code: "om", label: "Afaan Oromoo", native: "Afaan Oromoo" },
 ];
 
-const BOT_USERNAME = "cheretas_bot";
 const TARGET_INVITES = 30;
 
 const formatDate = (dateString: string) => {
@@ -45,14 +47,26 @@ export default function Profile() {
   const { t, i18n } = useTranslation();
   const { user, loading } = useAppSelector((state) => state.auth);
 
+  // Fetch referral stats
+  const {
+    data: referralData,
+    isLoading: isReferralLoading
+  } = useQuery({
+    queryKey: ["gerMyReferalstat"],
+    queryFn: gerMyReferalstat
+  });
+
   const telegram = window?.Telegram?.WebApp;
   const tgUser = telegram?.initDataUnsafe?.user;
   const tgPhoto = tgUser?.photo_url;
   const currentLangCode = i18n.resolvedLanguage?.split("-")[0] ?? "en";
 
-  const referralLink = user?.referral_id ? `https://t.me/${BOT_USERNAME}?start=ref_${user.referral_id}` : "";
+  // Extract real referral data
+  const stats = referralData?.data;
+  const referralLink = stats?.referralLink?.trim() || (user?.referral_id ? `https://t.me/cheretas_bot?start=ref_${user.referral_id}` : "");
 
-  const invitedCount = 12;
+  // Use real totalReferrals for progress
+  const invitedCount = stats?.totalReferrals ?? 0;
   const progressPercentage = Math.min((invitedCount / TARGET_INVITES) * 100, 100);
   const remainingInvites = Math.max(TARGET_INVITES - invitedCount, 0);
 
@@ -125,9 +139,7 @@ export default function Profile() {
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground">Your personal information.</p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-2.5">
-            <Settings className="h-5 w-5 text-muted-foreground" />
-          </div>
+
         </div>
 
         {/* PROFILE CARD */}
@@ -146,7 +158,6 @@ export default function Profile() {
             <p className="mt-0.5 text-xs text-muted-foreground">@{user.username || "no_username"}</p>
             <div className="mt-3 flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1">
               <ShieldCheck className="h-3 w-3 text-primary" />
-              <span className="text-[9px] font-bold text-primary">VERIFIED MEMBER</span>
             </div>
           </CardContent>
         </Card>
@@ -160,31 +171,70 @@ export default function Profile() {
             </div>
             <Gift className="h-5 w-5 text-primary" />
           </div>
+
           <Card className="overflow-hidden rounded-3xl border-primary/20 bg-primary/[0.02] shadow-sm">
             <CardContent className="space-y-4 p-4">
+
+              {/* PROGRESS SECTION */}
               <div className="rounded-2xl border border-primary/10 bg-background p-3 shadow-inner">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="rounded-full bg-primary/10 p-1.5 text-primary"><Ticket className="h-4 w-4" /></div>
-                    <div>
-                      <p className="text-xs font-bold">1 Free Bid Ticket</p>
-                      <p className="text-[9px] text-muted-foreground">Invite {TARGET_INVITES} friends to unlock</p>
-                    </div>
+                {isReferralLoading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-2 w-full" />
+                    <Skeleton className="h-3 w-1/2 mx-auto" />
                   </div>
-                  <span className="text-xs font-bold text-primary">{invitedCount}/{TARGET_INVITES}</span>
-                </div>
-                <Progress value={progressPercentage} className="h-2" />
-                <p className="mt-2 text-[9px] text-center text-muted-foreground font-medium">
-                  {remainingInvites > 0 ? `Invite ${remainingInvites} more friends to get 1 free ticket!` : "Congratulations! You've unlocked a free ticket."}
-                </p>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="rounded-full bg-primary/10 p-1.5 text-primary"><Ticket className="h-4 w-4" /></div>
+                        <div>
+                          <p className="text-xs font-bold">1 Free Bid Ticket</p>
+                          <p className="text-[9px] text-muted-foreground">Invite {TARGET_INVITES} friends to unlock</p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-primary">{invitedCount}/{TARGET_INVITES}</span>
+                    </div>
+
+                    <Progress value={progressPercentage} className="h-2" />
+
+                    <p className="mt-2 text-[9px] text-center text-muted-foreground font-medium">
+                      {remainingInvites > 0
+                        ? `Invite ${remainingInvites} more friends to get 1 free ticket!`
+                        : "Congratulations! You've unlocked a free ticket."}
+                    </p>
+
+                    {/* Breakdown Stats */}
+                    <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-2 text-[10px] text-muted-foreground">
+                      <div className="flex flex-col items-center">
+                        <span className="font-bold text-foreground">{stats?.todayReferrals ?? 0}</span>
+                        <span>Today</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className="font-bold text-foreground">{stats?.thisWeekReferrals ?? 0}</span>
+                        <span>This Week</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className="font-bold text-foreground">{stats?.thisMonthReferrals ?? 0}</span>
+                        <span>This Month</span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
+
+              {/* LINK BOX */}
               <div className="flex items-center gap-2 rounded-xl border border-border bg-background p-2.5">
                 <Link2 className="h-4 w-4 shrink-0 text-primary" />
-                <p className="min-w-0 flex-1 truncate text-[11px] font-medium text-muted-foreground">{referralLink || "Referral link unavailable"}</p>
+                <p className="min-w-0 flex-1 truncate text-[11px] font-medium text-muted-foreground">
+                  {referralLink || "Referral link unavailable"}
+                </p>
                 <Button variant="ghost" size="icon" disabled={!referralLink} onClick={() => handleCopy(referralLink)} className="h-7 w-7 shrink-0 rounded-lg">
                   <Copy className="h-3.5 w-3.5" />
                 </Button>
               </div>
+
+              {/* ACTIONS */}
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" disabled={!referralLink} onClick={() => handleCopy(referralLink)} className="h-10 rounded-xl text-xs font-bold">
                   <Copy className="mr-2 h-3.5 w-3.5" /> Copy Link
@@ -203,7 +253,7 @@ export default function Profile() {
           <Card className="overflow-hidden rounded-2xl border-border shadow-sm">
             <CardContent className="divide-y divide-border p-0">
 
-              {/* TELEGRAM ID (NEW) */}
+              {/* TELEGRAM ID */}
               <div className="flex items-center gap-3 p-3.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Fingerprint className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
@@ -211,12 +261,7 @@ export default function Profile() {
                   <p className="mt-0.5 font-mono text-xs font-bold tracking-wider">{user.telegram_id || "Not available"}</p>
                 </div>
                 {user.telegram_id && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground"
-                    onClick={() => handleCopy(String(user.telegram_id))}
-                  >
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleCopy(String(user.telegram_id))}>
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
                 )}
@@ -236,10 +281,10 @@ export default function Profile() {
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Gift className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-medium text-muted-foreground">Referral ID</p>
-                  <p className="mt-0.5 font-mono text-xs font-bold tracking-wider">{user.referral_id || "Not available"}</p>
+                  <p className="mt-0.5 font-mono text-xs font-bold tracking-wider">{user.referral_id || stats?.referralCode?.trim() || "Not available"}</p>
                 </div>
-                {user.referral_id && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleCopy(user.referral_id)}>
+                {(user.referral_id || stats?.referralCode) && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleCopy(user.referral_id || stats?.referralCode?.trim())}>
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
                 )}
@@ -257,7 +302,7 @@ export default function Profile() {
           </Card>
         </section>
 
-        {/* PREVIOUS AUCTIONS SECTION */}
+        {/* PREVIOUS AUCTIONS */}
         <section className="pt-2">
           <PreviousUserBid />
         </section>

@@ -94,8 +94,7 @@ export default function PaymentPage() {
     const auction = order?.auction;
     const item = auction?.item;
     const paymentMethod = order?.payment_method;
-
-    const amountToPay = auction?.starting_bid || order?.bid_amount;
+    const amountToPay = auction?.participation_fee || order?.bid_amount;
     const currency = order?.currency || "ETB";
     const isExpired = timeLeft <= 0 && order?.status === "awaiting_payment";
 
@@ -150,7 +149,7 @@ export default function PaymentPage() {
             });
 
             setTimeout(() => {
-                navigate("/");
+                navigate("/my-bids");
             }, 3000);
         },
 

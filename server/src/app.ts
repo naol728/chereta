@@ -5,6 +5,7 @@ import pinoHttp from "pino-http";
 import authRoute from "./routes/auth.route";
 import AuctionRoute from "./routes/auction.route";
 import { globalErrorHandler } from "./middleware/globalErrorhandler";
+import ReferalRoute from "./routes/referal.route";
 const app = express();
 
 app.disable("x-powered-by");
@@ -28,6 +29,7 @@ app.get("/health", (_req, res) => {
 });
 app.use("/auth", authRoute);
 app.use("/auction", AuctionRoute);
+app.use("/ref", ReferalRoute);
 
 // app.get("/", (_, res) => {
 //   res.send("welcome to chereta");
