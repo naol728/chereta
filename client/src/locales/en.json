@@ -149,7 +149,7 @@
       "unique": "Unique",
       "pending": "Pending",
       "lost": "Lost"
-    },
+    },  
     "noBidsFound": "No bids found",
     "failedToLoad": "Failed to load bids",
     "tryAgain": "Try Again",

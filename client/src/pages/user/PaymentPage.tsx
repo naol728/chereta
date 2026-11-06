@@ -18,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Alert,
     AlertDescription,
@@ -88,6 +89,120 @@ const formatStatusLabel = (status: string) => {
 };
 
 // ============================================================
+// SKELETON LOADER
+// ============================================================
+
+function PaymentPageSkeleton() {
+    return (
+        <div className="relative w-full bg-background pb-24">
+            <div className="mx-auto max-w-lg">
+
+                {/* HEADER SKELETON */}
+                <header className="sticky top-0 z-20 flex flex-col border-b border-border/50 bg-background/95 backdrop-blur-md">
+                    <div className="flex items-center justify-between gap-3 px-4 py-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+                            <div className="space-y-1.5">
+                                <Skeleton className="h-3.5 w-28" />
+                                <Skeleton className="h-2.5 w-16" />
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Skeleton className="h-5 w-20 rounded-full" />
+                            <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+                        </div>
+                    </div>
+                    <Skeleton className="h-6 w-full rounded-none" />
+                </header>
+
+                <main className="space-y-4 p-4">
+
+                    {/* AUCTION SUMMARY SKELETON */}
+                    <Card className="overflow-hidden border-border shadow-sm">
+                        <div className="flex items-center gap-3 p-3 border-b border-border/50 bg-muted/20">
+                            <Skeleton className="h-16 w-16 shrink-0 rounded-xl" />
+                            <div className="flex flex-col gap-2 flex-1">
+                                <Skeleton className="h-3.5 w-3/4" />
+                                <Skeleton className="h-2.5 w-1/2" />
+                                <Skeleton className="h-3.5 w-2/5" />
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between p-3">
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-3 w-24" />
+                        </div>
+                    </Card>
+
+                    {/* PAYMENT METHOD SELECTOR SKELETON */}
+                    <div className="space-y-3">
+                        <div className="space-y-1.5">
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-3 w-56" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Skeleton className="h-28 rounded-xl" />
+                            <Skeleton className="h-28 rounded-xl" />
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* TELEBIRR SECTION SKELETON */}
+                    <div className="space-y-4">
+                        <Skeleton className="h-4 w-36 px-1" />
+                        <Card className="border-border shadow-none">
+                            <CardContent className="p-4 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <Skeleton className="h-5 w-20 rounded-full" />
+                                    <Skeleton className="h-3 w-28" />
+                                </div>
+                                <Skeleton className="h-16 w-full rounded-xl" />
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                                        <div className="space-y-1.5">
+                                            <Skeleton className="h-2.5 w-20" />
+                                            <Skeleton className="h-3 w-32" />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                                        <div className="space-y-1.5">
+                                            <Skeleton className="h-2.5 w-24" />
+                                            <Skeleton className="h-4 w-36" />
+                                        </div>
+                                        <Skeleton className="h-8 w-8 rounded-full" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* TRANSACTION INPUT SKELETON */}
+                        <div className="space-y-3">
+                            <div className="space-y-1.5">
+                                <Skeleton className="h-4 w-44" />
+                                <Skeleton className="h-3 w-52" />
+                            </div>
+                            <Skeleton className="h-12 w-full rounded-md" />
+                        </div>
+
+                        <div className="flex items-center justify-center gap-1.5 pt-2">
+                            <Skeleton className="h-3.5 w-3.5 rounded-full" />
+                            <Skeleton className="h-2.5 w-44" />
+                        </div>
+                    </div>
+                </main>
+
+                {/* STICKY SUBMIT BUTTON SKELETON */}
+                <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/50 bg-background/95 p-3 backdrop-blur-md">
+                    <div className="mx-auto max-w-lg">
+                        <Skeleton className="h-11 w-full rounded-xl" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 
@@ -107,6 +222,9 @@ export default function PaymentPage() {
     const [ticketCode, setTicketCode] = useState("");
 
     const [timeLeft, setTimeLeft] = useState<number>(0);
+
+    // NEW: minimum 2-second loading gate
+    const [minLoadingDone, setMinLoadingDone] = useState(false);
 
     // ============================================================
     // FETCH PAYMENT ORDER
@@ -137,6 +255,15 @@ export default function PaymentPage() {
     // Expiration applies to the payment option, not the ticket option.
     const isPaymentExpired =
         timeLeft <= 0 && order?.status === "awaiting_payment";
+
+    // ============================================================
+    // MINIMUM 2-SECOND LOADING GATE
+    // ============================================================
+
+    useEffect(() => {
+        const timer = setTimeout(() => setMinLoadingDone(true), 2000);
+        return () => clearTimeout(timer);
+    }, []);
 
     // ============================================================
     // COUNTDOWN TIMER
@@ -312,15 +439,11 @@ export default function PaymentPage() {
     };
 
     // ============================================================
-    // LOADING STATE
+    // LOADING STATE — waits for BOTH the query AND 2 seconds
     // ============================================================
 
-    if (isLoading) {
-        return (
-            <div className="w-full bg-background p-4 flex justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+    if (!minLoadingDone || isLoading) {
+        return <PaymentPageSkeleton />;
     }
 
     // ============================================================
