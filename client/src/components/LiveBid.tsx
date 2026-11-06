@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
     ChevronLeft,
     ChevronRight,
@@ -71,12 +72,6 @@ const formatAmount = (amount: number, currency = "ETB") => {
     }).format(amount) + ` ${currency}`;
 };
 
-const conditionLabel: Record<AuctionItem["condition"], string> = {
-    new: "New",
-    used: "Used",
-    refurbished: "Refurbished",
-};
-
 function getImage(item: AuctionItem) {
     return item.image_url || item.images?.[0] || "";
 }
@@ -103,6 +98,7 @@ function getTimeRemaining(endTime: string) {
 // ============================================================
 
 function CountdownTimer({ endsAt }: { endsAt: string }) {
+    const { t } = useTranslation();
     const [timeLeft, setTimeLeft] = useState(getTimeRemaining(endsAt));
 
     useEffect(() => {
@@ -117,7 +113,7 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
         return (
             <div className="flex items-center gap-1 text-[10px] font-bold text-destructive">
                 <Clock className="h-3 w-3" />
-                Auction Ended
+                {t("liveBid.auctionEnded")}
             </div>
         );
     }
@@ -162,23 +158,12 @@ function ProductImage({ item, className = "" }: { item: AuctionItem; className?:
 function ProductSkeleton() {
     return (
         <div className="w-[65vw] min-w-[65vw] snap-start overflow-hidden rounded-2xl border border-border bg-card sm:w-[260px] sm:min-w-[260px]">
-            {/* Image Skeleton */}
             <Skeleton className="h-[130px] w-full rounded-none sm:h-[150px]" />
-
-            {/* Content Skeleton */}
             <div className="space-y-2.5 p-3">
-                {/* Title */}
                 <Skeleton className="h-4 w-3/4" />
-
-                {/* Description */}
                 <Skeleton className="h-3 w-full" />
-
-                {/* Countdown */}
                 <Skeleton className="h-3 w-1/3" />
-
-                {/* Divider */}
                 <div className="border-t border-border/50 pt-2 mt-2 space-y-2">
-                    {/* Bid & Bids row */}
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
                             <Skeleton className="h-2 w-8" />
@@ -189,8 +174,6 @@ function ProductSkeleton() {
                             <Skeleton className="h-4 w-10" />
                         </div>
                     </div>
-
-                    {/* Button */}
                     <Skeleton className="h-8 w-full rounded-lg" />
                 </div>
             </div>
@@ -203,6 +186,7 @@ function ProductSkeleton() {
 // ============================================================
 
 export default function LiveBid() {
+    const { t } = useTranslation();
     const sliderRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
@@ -247,11 +231,11 @@ export default function LiveBid() {
                         <div className="mb-1 flex items-center gap-1.5">
                             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />
                             <p className="text-[10px] font-bold uppercase tracking-wider text-destructive">
-                                በቀጥታ ጨረታ
+                                {t("liveBid.liveAuction")}
                             </p>
                         </div>
                         <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
-                            አሁን ቅረብ
+                            {t("liveBid.bidNow")}
                         </h2>
                     </div>
 
@@ -263,7 +247,7 @@ export default function LiveBid() {
                                 size="icon"
                                 className="h-7 w-7 rounded-full border-border bg-card"
                                 onClick={() => scroll("left")}
-                                aria-label="Previous auctions"
+                                aria-label={t("liveBid.previousAuctions")}
                             >
                                 <ChevronLeft className="h-3.5 w-3.5" />
                             </Button>
@@ -272,7 +256,7 @@ export default function LiveBid() {
                                 size="icon"
                                 className="h-7 w-7 rounded-full border-border bg-card"
                                 onClick={() => scroll("right")}
-                                aria-label="Next auctions"
+                                aria-label={t("liveBid.nextAuctions")}
                             >
                                 <ChevronRight className="h-3.5 w-3.5" />
                             </Button>
@@ -284,7 +268,7 @@ export default function LiveBid() {
                             className="h-8 w-8 rounded-full border-border bg-card"
                             onClick={() => refetch()}
                             disabled={isFetching}
-                            aria-label="Refresh auctions"
+                            aria-label={t("liveBid.refreshAuctions")}
                         >
                             <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
                         </Button>
@@ -305,9 +289,9 @@ export default function LiveBid() {
                     <Card className="rounded-xl border-destructive/20 bg-card">
                         <CardContent className="flex flex-col items-center px-4 py-6 text-center">
                             <RefreshCw className="mb-2 h-6 w-6 text-destructive" />
-                            <h3 className="text-sm font-bold">Unable to load</h3>
+                            <h3 className="text-sm font-bold">{t("liveBid.unableToLoad")}</h3>
                             <Button onClick={() => refetch()} className="mt-3 h-8 rounded-lg px-4 text-xs" size="sm">
-                                Try again
+                                {t("liveBid.tryAgain")}
                             </Button>
                         </CardContent>
                     </Card>
@@ -318,9 +302,9 @@ export default function LiveBid() {
                     <Card className="rounded-xl border-border bg-card">
                         <CardContent className="flex flex-col items-center px-4 py-8 text-center">
                             <Package className="mb-2 h-6 w-6 text-muted-foreground opacity-50" />
-                            <h3 className="text-sm font-bold">No live auctions</h3>
+                            <h3 className="text-sm font-bold">{t("liveBid.noLiveAuctions")}</h3>
                             <p className="mt-1 text-xs text-muted-foreground">
-                                Check back later!
+                                {t("liveBid.checkBackLater")}
                             </p>
                         </CardContent>
                     </Card>
@@ -353,13 +337,13 @@ export default function LiveBid() {
                                         {/* Live Indicator */}
                                         <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-destructive px-2 py-0.5 text-[9px] font-bold text-destructive-foreground shadow-sm">
                                             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-                                            LIVE
+                                            {t("liveBid.live")}
                                         </div>
 
                                         {item.condition && (
                                             <div className="absolute right-2 top-2">
                                                 <Badge className="rounded-full bg-background/90 text-foreground text-[9px] font-bold px-2 py-0.5 hover:bg-background/90">
-                                                    {conditionLabel[item.condition]}
+                                                    {t(`liveBid.condition.${item.condition}`)}
                                                 </Badge>
                                             </div>
                                         )}
@@ -372,7 +356,7 @@ export default function LiveBid() {
                                         </h3>
 
                                         <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
-                                            {item.description || "Discover this product."}
+                                            {item.description || t("liveBid.discoverProduct")}
                                         </p>
 
                                         {/* COUNTDOWN TIMER */}
@@ -384,7 +368,7 @@ export default function LiveBid() {
                                         <div className="mt-2 flex items-center justify-between border-t border-border/50 pt-2">
                                             <div>
                                                 <p className="text-[9px] font-medium uppercase text-muted-foreground">
-                                                    Bid
+                                                    {t("liveBid.bid")}
                                                 </p>
                                                 <p className="text-xs font-bold text-primary">
                                                     {formatAmount(auction.starting_bid, auction.currency)}
@@ -393,7 +377,7 @@ export default function LiveBid() {
 
                                             <div className="text-right">
                                                 <p className="text-[9px] font-medium uppercase text-muted-foreground">
-                                                    Bids
+                                                    {t("liveBid.bids")}
                                                 </p>
                                                 <p className="text-xs font-bold text-foreground">
                                                     {auction.total_bids}
@@ -407,7 +391,7 @@ export default function LiveBid() {
                                             onClick={() => handleViewProduct(auction.id)}
                                         >
                                             <Gavel className="mr-1.5 h-3 w-3" />
-                                            View
+                                            {t("liveBid.view")}
                                             <ArrowUpRight className="ml-auto h-3 w-3 opacity-70" />
                                         </Button>
                                     </CardContent>
@@ -421,7 +405,7 @@ export default function LiveBid() {
                 {!isLoading && auctions.length > 1 && (
                     <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] text-muted-foreground sm:hidden">
                         <ChevronLeft className="h-3 w-3" />
-                        <span>ወደ ግራ ወይም ቀኝ ያንሸራትቱ</span>
+                        <span>{t("liveBid.swipeHint")}</span>
                         <ChevronRight className="h-3 w-3" />
                     </div>
                 )}

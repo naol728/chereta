@@ -2,6 +2,7 @@
 // @ts-nocheck
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getPreviousAuctions } from "@/api/auction";
 
 import { Button } from "@/components/ui/button";
@@ -44,29 +45,31 @@ const formatAmount = (amount: number | string, currency = "ETB") => {
 // ============================================================
 
 function DeliveryStatus({ status }: { status: string }) {
-    const config: Record<string, { label: string; className: string; icon: any }> = {
+    const { t } = useTranslation();
+
+    const config: Record<string, { labelKey: string; className: string; icon: any }> = {
         pending: {
-            label: "Awaiting delivery",
+            labelKey: "previousUserBid.deliveryStatus.pending",
             className: "bg-amber-500/10 text-amber-600",
             icon: Clock,
         },
         processing: {
-            label: "Processing",
+            labelKey: "previousUserBid.deliveryStatus.processing",
             className: "bg-blue-500/10 text-blue-600",
             icon: Package,
         },
         shipped: {
-            label: "Shipped",
+            labelKey: "previousUserBid.deliveryStatus.shipped",
             className: "bg-indigo-500/10 text-indigo-600",
             icon: Truck,
         },
         delivered: {
-            label: "Delivered",
+            labelKey: "previousUserBid.deliveryStatus.delivered",
             className: "bg-emerald-500/10 text-emerald-600",
             icon: CheckCircle2,
         },
         cancelled: {
-            label: "Cancelled",
+            labelKey: "previousUserBid.deliveryStatus.cancelled",
             className: "bg-red-500/10 text-red-600",
             icon: Package,
         },
@@ -81,7 +84,7 @@ function DeliveryStatus({ status }: { status: string }) {
             className={`gap-1 rounded-full border-0 px-2.5 py-1 text-[10px] font-semibold ${item.className}`}
         >
             <Icon className="h-3 w-3" />
-            {item.label}
+            {t(item.labelKey)}
         </Badge>
     );
 }
@@ -91,6 +94,7 @@ function DeliveryStatus({ status }: { status: string }) {
 // ============================================================
 
 export default function PreviousUserBid() {
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
 
     const { data, isLoading, isError, refetch, isFetching } = useQuery({
@@ -106,9 +110,9 @@ export default function PreviousUserBid() {
             {/* Header with Refresh */}
             <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold">Previous Auctions</h3>
+                    <h3 className="text-sm font-bold">{t("previousUserBid.title")}</h3>
                     <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-[9px]">
-                        WON
+                        {t("previousUserBid.won")}
                     </Badge>
                 </div>
                 <Button
@@ -143,9 +147,9 @@ export default function PreviousUserBid() {
             {/* Error State */}
             {isError && !isLoading && (
                 <Card className="rounded-2xl border-border bg-card p-4 text-center">
-                    <p className="text-xs text-muted-foreground">Unable to load auctions.</p>
+                    <p className="text-xs text-muted-foreground">{t("previousUserBid.unableToLoad")}</p>
                     <Button onClick={() => refetch()} size="sm" className="mt-2 h-7 text-xs">
-                        Try again
+                        {t("previousUserBid.tryAgain")}
                     </Button>
                 </Card>
             )}
@@ -154,7 +158,7 @@ export default function PreviousUserBid() {
             {!isLoading && !isError && auctions.length === 0 && (
                 <Card className="rounded-2xl border-dashed border-border bg-card py-8 text-center">
                     <Gavel className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">No previous auctions yet.</p>
+                    <p className="text-xs text-muted-foreground">{t("previousUserBid.noPreviousAuctions")}</p>
                 </Card>
             )}
 
@@ -177,7 +181,7 @@ export default function PreviousUserBid() {
                                         {image ? (
                                             <img
                                                 src={image}
-                                                alt={item?.title || "Auction item"}
+                                                alt={item?.title || t("previousUserBid.auctionItem")}
                                                 loading="lazy"
                                                 className="h-full w-full object-cover"
                                             />
@@ -188,7 +192,7 @@ export default function PreviousUserBid() {
                                         )}
                                         <div className="absolute left-1 top-1">
                                             <Badge className="bg-emerald-500 px-1.5 py-0 text-[8px] text-white hover:bg-emerald-500">
-                                                WON
+                                                {t("previousUserBid.won")}
                                             </Badge>
                                         </div>
                                     </div>
@@ -196,7 +200,7 @@ export default function PreviousUserBid() {
                                     {/* Details */}
                                     <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
                                         <h2 className="truncate text-xs font-bold">
-                                            {item?.title || "Auction item"}
+                                            {item?.title || t("previousUserBid.auctionItem")}
                                         </h2>
 
                                         <div className="flex items-center gap-1 text-[10px] text-muted-foreground">

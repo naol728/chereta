@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import {
     getAuctionItem,
@@ -55,7 +56,6 @@ const formatAmount = (amount: number, currency = "ETB") => {
     );
 };
 
-
 function getTimeRemaining(endTime: string) {
     const endTimestamp = new Date(endTime).getTime();
 
@@ -82,8 +82,8 @@ function getTimeRemaining(endTime: string) {
     };
 }
 
-
 function CountdownTimer({ endsAt }: { endsAt: string }) {
+    const { t } = useTranslation();
     const [timeLeft, setTimeLeft] = useState(() =>
         getTimeRemaining(endsAt)
     );
@@ -106,7 +106,7 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
         return (
             <div className="flex items-center justify-center gap-2 rounded-xl border border-destructive/20 bg-destructive/5 py-2 text-xs font-bold text-destructive">
                 <Clock className="h-4 w-4" />
-                Invalid auction end date
+                {t("bidDetail.invalidEndDate")}
             </div>
         );
     }
@@ -115,7 +115,7 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
         return (
             <div className="flex items-center justify-center gap-2 rounded-xl border border-destructive/20 bg-destructive/5 py-2.5 text-xs font-bold text-destructive">
                 <Clock className="h-4 w-4" />
-                Auction Ended
+                {t("bidDetail.auctionEnded")}
             </div>
         );
     }
@@ -125,7 +125,7 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
             <Clock className="h-4 w-4 text-primary" />
 
             <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Ends in:
+                {t("bidDetail.endsIn")}
             </span>
 
             <span className="text-sm font-extrabold tabular-nums text-primary">
@@ -138,14 +138,12 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
     );
 }
 
-
-
-
 // ============================================================
 // COMPONENT
 // ============================================================
 
 export default function Bid() {
+    const { t } = useTranslation();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
@@ -204,7 +202,6 @@ export default function Bid() {
 
     useEffect(() => {
         if (!checkingPayment && hasPendingOrder && pendingOrder?.id) {
-            // Use replace: true so they can't go back and get stuck in a loop
             navigate(`/payment/${pendingOrder.auction_id}`, { replace: true });
         }
     }, [checkingPayment, hasPendingOrder, pendingOrder, navigate]);
@@ -244,7 +241,7 @@ export default function Bid() {
             const auction_id = response?.data?.auction_id;
 
             if (!auction_id) {
-                toast.error("Payment order ID was not returned.");
+                toast.error(t("bidDetail.paymentOrderIdMissing"));
                 return;
             }
 
@@ -252,14 +249,13 @@ export default function Bid() {
                 "success"
             );
 
-            // Navigate to payment page
             navigate(`/payment/${auction_id}`, { replace: true });
         },
 
         onError: (error: any) => {
             toast.error(
                 error?.response?.data?.message ||
-                "Failed to create payment order. Please try again."
+                t("bidDetail.failedToCreatePayment")
             );
 
             window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred(
@@ -313,20 +309,20 @@ export default function Bid() {
                     </div>
 
                     <h2 className="text-xl font-bold">
-                        {id ? "Auction not found" : "Invalid auction"}
+                        {id ? t("bidDetail.auctionNotFound") : t("bidDetail.invalidAuction")}
                     </h2>
 
                     <p className="mt-2 text-sm text-muted-foreground">
                         {id
-                            ? "We couldn't load this auction. It may have been removed or is no longer available."
-                            : "The auction ID is missing from the URL."}
+                            ? t("bidDetail.auctionNotFoundDescription")
+                            : t("bidDetail.missingAuctionId")}
                     </p>
 
                     {isError && (
                         <p className="mt-2 text-xs text-muted-foreground">
                             {error instanceof Error
                                 ? error.message
-                                : "Something went wrong."}
+                                : t("bidDetail.somethingWentWrong")}
                         </p>
                     )}
 
@@ -337,7 +333,7 @@ export default function Bid() {
                             onClick={() => navigate(-1)}
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
-                            Go back
+                            {t("bidDetail.goBack")}
                         </Button>
 
                         {id && (
@@ -345,7 +341,7 @@ export default function Bid() {
                                 className="flex-1"
                                 onClick={() => refetch()}
                             >
-                                Try again
+                                {t("bidDetail.tryAgain")}
                             </Button>
                         )}
                     </div>
@@ -363,7 +359,6 @@ export default function Bid() {
             <div className="mx-auto max-w-lg">
 
                 {/* Sticky Header */}
-
                 <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/50 bg-background/95 px-4 py-3 backdrop-blur-md">
                     <Button
                         variant="ghost"
@@ -375,9 +370,9 @@ export default function Bid() {
                     </Button>
 
                     <div className="min-w-0 flex-1">
-                        <h1 className="text-sm font-bold">Place your bid</h1>
+                        <h1 className="text-sm font-bold">{t("bidDetail.placeYourBid")}</h1>
                         <p className="text-[10px] text-muted-foreground">
-                            Lowest unique bid wins
+                            {t("bidDetail.lowestUniqueWins")}
                         </p>
                     </div>
 
@@ -401,17 +396,17 @@ export default function Bid() {
                             ) : (
                                 <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
                                     <ImageOff className="h-10 w-10" />
-                                    <span className="text-sm">No image available</span>
+                                    <span className="text-sm">{t("bidDetail.noImageAvailable")}</span>
                                 </div>
                             )}
 
                             <Badge className="absolute left-3 top-3 rounded-full bg-background/90 text-foreground shadow-sm">
-                                {item.category || "General"}
+                                {item.category || t("bidDetail.general")}
                             </Badge>
 
                             <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-destructive px-2.5 py-1 text-[10px] font-bold text-destructive-foreground shadow-lg">
                                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-                                LIVE
+                                {t("bidDetail.live")}
                             </div>
                         </div>
 
@@ -445,7 +440,7 @@ export default function Bid() {
                         <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-2 text-center shadow-sm">
                             <TrendingUp className="mb-1 h-4 w-4 text-primary" />
                             <span className="text-[10px] text-muted-foreground">
-                                Start Bid
+                                {t("bidDetail.startBid")}
                             </span>
                             <span className="text-xs font-bold">
                                 {formatAmount(auction.starting_bid, auction.currency)}
@@ -455,7 +450,7 @@ export default function Bid() {
                         <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-2 text-center shadow-sm">
                             <Users className="mb-1 h-4 w-4 text-blue-500" />
                             <span className="text-[10px] text-muted-foreground">
-                                Total Bids
+                                {t("bidDetail.totalBids")}
                             </span>
                             <span className="text-xs font-bold">
                                 {auction.total_bids}
@@ -465,7 +460,7 @@ export default function Bid() {
                         <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-2 text-center shadow-sm">
                             <Clock className="mb-1 h-4 w-4 text-destructive" />
                             <span className="text-[10px] text-muted-foreground">
-                                Ends At
+                                {t("bidDetail.endsAt")}
                             </span>
                             <span className="text-[11px] font-bold">
                                 {formatDate(auction.ends_at).split(",")[0]}
@@ -473,7 +468,7 @@ export default function Bid() {
                         </div>
                     </div>
 
-                    {/* LIVE COUNTDOWN TIMER (Placed right below the stats grid) */}
+                    {/* LIVE COUNTDOWN TIMER */}
                     <CountdownTimer endsAt={auction.ends_at} />
 
                     {/* Product Details */}
@@ -485,12 +480,12 @@ export default function Bid() {
                             </h2>
 
                             <Badge variant="outline" className="shrink-0 capitalize text-[10px]">
-                                {item.condition}
+                                {t(`bidDetail.condition.${item.condition}`)}
                             </Badge>
                         </div>
 
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                            {item.description || "No description available for this item."}
+                            {item.description || t("bidDetail.noDescription")}
                         </p>
                     </section>
 
@@ -506,13 +501,11 @@ export default function Bid() {
 
                             <div>
                                 <h3 className="text-sm font-semibold">
-                                    How bidding works
+                                    {t("bidDetail.howBiddingWorks")}
                                 </h3>
 
                                 <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-                                    Choose your bid amount. If your amount is the
-                                    lowest amount submitted by exactly one user,
-                                    you win the auction.
+                                    {t("bidDetail.howBiddingWorksDescription")}
                                 </p>
                             </div>
                         </CardContent>
@@ -523,8 +516,9 @@ export default function Bid() {
                         <div className="flex flex-col items-center justify-center py-10 space-y-3">
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
                             <p className="text-sm text-muted-foreground text-center">
-                                You have an unfinished bid for this auction.<br />
-                                Redirecting to payment...
+                                {t("bidDetail.unfinishedBid")}
+                                <br />
+                                {t("bidDetail.redirectingToPayment")}
                             </p>
                         </div>
                     ) : (
@@ -534,7 +528,7 @@ export default function Bid() {
                             <section className="space-y-3">
                                 <div>
                                     <h3 className="text-sm font-bold">
-                                        Enter your bid amount
+                                        {t("bidDetail.enterBidAmount")}
                                     </h3>
                                 </div>
 
@@ -544,7 +538,7 @@ export default function Bid() {
                                         min="1"
                                         step="0.01"
                                         inputMode="decimal"
-                                        placeholder="Enter amount"
+                                        placeholder={t("bidDetail.enterAmount")}
                                         value={bidAmount}
                                         onChange={(e) => setBidAmount(e.target.value)}
                                         className="h-12 pr-14 text-lg font-bold"
@@ -558,7 +552,7 @@ export default function Bid() {
                                 {bidAmount && !isValidAmount && (
                                     <p className="flex items-center gap-1 text-xs text-destructive">
                                         <AlertCircle className="h-3.5 w-3.5" />
-                                        Enter a valid bid amount of at least 1.
+                                        {t("bidDetail.invalidAmount")}
                                     </p>
                                 )}
 
@@ -566,7 +560,7 @@ export default function Bid() {
                                     <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
 
                                     <p className="text-[11px] leading-relaxed text-muted-foreground">
-                                        You can only submit the same bid amount once per auction.
+                                        {t("bidDetail.sameBidOnce")}
                                     </p>
                                 </div>
                             </section>
@@ -576,17 +570,17 @@ export default function Bid() {
                             {isValidAmount && (
                                 <Card className="shadow-sm">
                                     <CardContent className="space-y-2 p-3">
-                                        <h3 className="text-sm font-semibold">Bid summary</h3>
+                                        <h3 className="text-sm font-semibold">{t("bidDetail.bidSummary")}</h3>
 
                                         <div className="flex justify-between text-xs">
-                                            <span className="text-muted-foreground">Item</span>
+                                            <span className="text-muted-foreground">{t("bidDetail.item")}</span>
                                             <span className="max-w-[60%] truncate font-medium">
                                                 {item.title}
                                             </span>
                                         </div>
 
                                         <div className="flex justify-between text-xs">
-                                            <span className="text-muted-foreground">Your bid</span>
+                                            <span className="text-muted-foreground">{t("bidDetail.yourBid")}</span>
                                             <span className="font-bold">
                                                 {formatAmount(amount, auction.currency)}
                                             </span>
@@ -596,7 +590,7 @@ export default function Bid() {
 
                                         <div className="flex justify-between">
                                             <span className="text-xs font-semibold">
-                                                Payment amount
+                                                {t("bidDetail.paymentAmount")}
                                             </span>
 
                                             <span className="text-sm font-bold text-primary">
@@ -613,13 +607,12 @@ export default function Bid() {
 
                     <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground pb-4">
                         <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                        Secure payment verification
+                        {t("bidDetail.securePayment")}
                     </div>
 
                 </main>
 
                 {/* Sticky Bottom Action Button */}
-                {/* Hide the button if redirecting to avoid clicking during transition */}
                 {!checkingPayment && !hasPendingOrder && (
                     <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/50 bg-background/95 p-3 backdrop-blur-md">
                         <div className="mx-auto max-w-lg">
@@ -634,11 +627,11 @@ export default function Bid() {
                                 {paymentMutation.isPending ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Creating payment order...
+                                        {t("bidDetail.creatingPaymentOrder")}
                                     </>
                                 ) : (
                                     <>
-                                        Continue to payment
+                                        {t("bidDetail.continueToPayment")}
                                         <ArrowRight className="ml-2 h-4 w-4" />
                                     </>
                                 )}

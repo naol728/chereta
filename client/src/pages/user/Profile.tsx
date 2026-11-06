@@ -76,24 +76,24 @@ export default function Profile() {
       localStorage.setItem("app-language", langCode);
       telegram?.HapticFeedback?.impactOccurred("light");
     } catch {
-      toast.error("Unable to change language.");
+      toast.error(t("profile.unableToChangeLanguage"));
     }
   };
 
   const handleCopy = async (text: string) => {
-    if (!text) return toast.error("Nothing to copy.");
+    if (!text) return toast.error(t("profile.nothingToCopy"));
     try {
       await navigator.clipboard.writeText(text);
-      toast.success("Copied!");
+      toast.success(t("profile.copied"));
       telegram?.HapticFeedback?.notificationOccurred("success");
     } catch {
-      toast.error("Unable to copy.");
+      toast.error(t("profile.unableToCopy"));
     }
   };
 
   const handleShareReferral = () => {
-    if (!referralLink) return toast.error("Referral link is not available.");
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent("Join me on Chereta!")}`;
+    if (!referralLink) return toast.error(t("profile.referralLinkNotAvailable"));
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(t("profile.shareMessage"))}`;
     telegram?.HapticFeedback?.impactOccurred("medium");
     if (telegram?.openTelegramLink) telegram.openTelegramLink(shareUrl);
     else window.open(shareUrl, "_blank", "noopener,noreferrer");
@@ -118,8 +118,8 @@ export default function Profile() {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center bg-background p-6 text-center">
         <div className="mb-4 rounded-2xl bg-muted p-4"><UserIcon className="h-8 w-8 text-muted-foreground" /></div>
-        <h3 className="text-base font-bold">Not logged in</h3>
-        <p className="mt-1 text-sm text-muted-foreground">Please restart Chereta to authenticate your account.</p>
+        <h3 className="text-base font-bold">{t("profile.notLoggedIn")}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{t("profile.notLoggedInDescription")}</p>
       </div>
     );
   }
@@ -134,12 +134,11 @@ export default function Profile() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold tracking-tight">{t("profile.title", "My Profile")}</h1>
-              <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-[9px]">ACCOUNT</Badge>
+              <h1 className="text-xl font-extrabold tracking-tight">{t("profile.title")}</h1>
+              <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-[9px]">{t("profile.account")}</Badge>
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">Your personal information.</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">{t("profile.subtitle")}</p>
           </div>
-
         </div>
 
         {/* PROFILE CARD */}
@@ -154,8 +153,8 @@ export default function Profile() {
                 <ShieldCheck className="h-3.5 w-3.5" />
               </div>
             </div>
-            <h2 className="text-lg font-extrabold tracking-tight">{[user.Fname, user.Lname].filter(Boolean).join(" ") || "Chereta User"}</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">@{user.username || "no_username"}</p>
+            <h2 className="text-lg font-extrabold tracking-tight">{[user.Fname, user.Lname].filter(Boolean).join(" ") || t("profile.cheretaUser")}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">@{user.username || t("profile.noUsername")}</p>
             <div className="mt-3 flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1">
               <ShieldCheck className="h-3 w-3 text-primary" />
             </div>
@@ -166,8 +165,8 @@ export default function Profile() {
         <section className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <div>
-              <h3 className="text-sm font-bold">Invite & Earn</h3>
-              <p className="mt-0.5 text-[10px] text-muted-foreground">Share Chereta and earn free bids.</p>
+              <h3 className="text-sm font-bold">{t("profile.inviteAndEarn")}</h3>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{t("profile.inviteAndEarnDescription")}</p>
             </div>
             <Gift className="h-5 w-5 text-primary" />
           </div>
@@ -189,8 +188,10 @@ export default function Profile() {
                       <div className="flex items-center gap-2">
                         <div className="rounded-full bg-primary/10 p-1.5 text-primary"><Ticket className="h-4 w-4" /></div>
                         <div>
-                          <p className="text-xs font-bold">1 Free Bid Ticket</p>
-                          <p className="text-[9px] text-muted-foreground">Invite {TARGET_INVITES} friends to unlock</p>
+                          <p className="text-xs font-bold">{t("profile.freeBidTicket")}</p>
+                          <p className="text-[9px] text-muted-foreground">
+                            {t("profile.inviteFriendsToUnlock", { count: TARGET_INVITES })}
+                          </p>
                         </div>
                       </div>
                       <span className="text-xs font-bold text-primary">{invitedCount}/{TARGET_INVITES}</span>
@@ -200,23 +201,23 @@ export default function Profile() {
 
                     <p className="mt-2 text-[9px] text-center text-muted-foreground font-medium">
                       {remainingInvites > 0
-                        ? `Invite ${remainingInvites} more friends to get 1 free ticket!`
-                        : "Congratulations! You've unlocked a free ticket."}
+                        ? t("profile.inviteMoreFriends", { count: remainingInvites })
+                        : t("profile.congratulationsUnlocked")}
                     </p>
 
                     {/* Breakdown Stats */}
                     <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-2 text-[10px] text-muted-foreground">
                       <div className="flex flex-col items-center">
                         <span className="font-bold text-foreground">{stats?.todayReferrals ?? 0}</span>
-                        <span>Today</span>
+                        <span>{t("profile.today")}</span>
                       </div>
                       <div className="flex flex-col items-center">
                         <span className="font-bold text-foreground">{stats?.thisWeekReferrals ?? 0}</span>
-                        <span>This Week</span>
+                        <span>{t("profile.thisWeek")}</span>
                       </div>
                       <div className="flex flex-col items-center">
                         <span className="font-bold text-foreground">{stats?.thisMonthReferrals ?? 0}</span>
-                        <span>This Month</span>
+                        <span>{t("profile.thisMonth")}</span>
                       </div>
                     </div>
                   </>
@@ -227,7 +228,7 @@ export default function Profile() {
               <div className="flex items-center gap-2 rounded-xl border border-border bg-background p-2.5">
                 <Link2 className="h-4 w-4 shrink-0 text-primary" />
                 <p className="min-w-0 flex-1 truncate text-[11px] font-medium text-muted-foreground">
-                  {referralLink || "Referral link unavailable"}
+                  {referralLink || t("profile.referralLinkUnavailable")}
                 </p>
                 <Button variant="ghost" size="icon" disabled={!referralLink} onClick={() => handleCopy(referralLink)} className="h-7 w-7 shrink-0 rounded-lg">
                   <Copy className="h-3.5 w-3.5" />
@@ -237,10 +238,10 @@ export default function Profile() {
               {/* ACTIONS */}
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" disabled={!referralLink} onClick={() => handleCopy(referralLink)} className="h-10 rounded-xl text-xs font-bold">
-                  <Copy className="mr-2 h-3.5 w-3.5" /> Copy Link
+                  <Copy className="mr-2 h-3.5 w-3.5" /> {t("profile.copyLink")}
                 </Button>
                 <Button disabled={!referralLink} onClick={handleShareReferral} className="h-10 rounded-xl text-xs font-bold shadow-sm">
-                  <Share2 className="mr-2 h-3.5 w-3.5" /> Share
+                  <Share2 className="mr-2 h-3.5 w-3.5" /> {t("profile.share")}
                 </Button>
               </div>
             </CardContent>
@@ -249,7 +250,7 @@ export default function Profile() {
 
         {/* ACCOUNT INFORMATION */}
         <section className="space-y-3">
-          <div className="px-1"><h3 className="text-sm font-bold">Account Information</h3></div>
+          <div className="px-1"><h3 className="text-sm font-bold">{t("profile.accountInformation")}</h3></div>
           <Card className="overflow-hidden rounded-2xl border-border shadow-sm">
             <CardContent className="divide-y divide-border p-0">
 
@@ -257,8 +258,8 @@ export default function Profile() {
               <div className="flex items-center gap-3 p-3.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Fingerprint className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-medium text-muted-foreground">Telegram ID</p>
-                  <p className="mt-0.5 font-mono text-xs font-bold tracking-wider">{user.telegram_id || "Not available"}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground">{t("profile.telegramId")}</p>
+                  <p className="mt-0.5 font-mono text-xs font-bold tracking-wider">{user.telegram_id || t("profile.notAvailable")}</p>
                 </div>
                 {user.telegram_id && (
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleCopy(String(user.telegram_id))}>
@@ -271,8 +272,8 @@ export default function Profile() {
               <div className="flex items-center gap-3 p-3.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Phone className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-medium text-muted-foreground">Phone Number</p>
-                  <p className="mt-0.5 truncate text-xs font-semibold">{user.phone || "Not provided"}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground">{t("profile.phoneNumber")}</p>
+                  <p className="mt-0.5 truncate text-xs font-semibold">{user.phone || t("profile.notProvided")}</p>
                 </div>
               </div>
 
@@ -280,8 +281,8 @@ export default function Profile() {
               <div className="flex items-center gap-3 p-3.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Gift className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-medium text-muted-foreground">Referral ID</p>
-                  <p className="mt-0.5 font-mono text-xs font-bold tracking-wider">{user.referral_id || stats?.referralCode?.trim() || "Not available"}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground">{t("profile.referralId")}</p>
+                  <p className="mt-0.5 font-mono text-xs font-bold tracking-wider">{user.referral_id || stats?.referralCode?.trim() || t("profile.notAvailable")}</p>
                 </div>
                 {(user.referral_id || stats?.referralCode) && (
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleCopy(user.referral_id || stats?.referralCode?.trim())}>
@@ -294,7 +295,7 @@ export default function Profile() {
               <div className="flex items-center gap-3 p-3.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><CalendarDays className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-medium text-muted-foreground">Member Since</p>
+                  <p className="text-[10px] font-medium text-muted-foreground">{t("profile.memberSince")}</p>
                   <p className="mt-0.5 text-xs font-semibold">{formatDate(user.created_at)}</p>
                 </div>
               </div>
@@ -309,14 +310,14 @@ export default function Profile() {
 
         {/* PREFERENCES */}
         <section className="space-y-3">
-          <div className="px-1"><h3 className="text-sm font-bold">Preferences</h3></div>
+          <div className="px-1"><h3 className="text-sm font-bold">{t("profile.preferences")}</h3></div>
           <Card className="overflow-hidden rounded-2xl border-border shadow-sm">
             <CardContent className="divide-y divide-border p-0">
               <div className="flex items-center gap-3 p-3.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Globe className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold">Language</p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">Choose your preferred language.</p>
+                  <p className="text-xs font-semibold">{t("profile.language")}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">{t("profile.languageDescription")}</p>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -338,8 +339,8 @@ export default function Profile() {
               <div className="flex items-center gap-3 p-3.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Moon className="h-4 w-4" /></div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold">Appearance</p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">Toggle dark / light mode.</p>
+                  <p className="text-xs font-semibold">{t("profile.appearance")}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">{t("profile.appearanceDescription")}</p>
                 </div>
                 <ModeToggle />
               </div>
@@ -349,19 +350,19 @@ export default function Profile() {
 
         {/* ACCOUNT ACTIONS */}
         <section className="space-y-3">
-          <div className="px-1"><h3 className="text-sm font-bold">Account Actions</h3></div>
+          <div className="px-1"><h3 className="text-sm font-bold">{t("profile.accountActions")}</h3></div>
           <Button variant="outline" onClick={() => navigate("/my-bids")} className="h-14 w-full justify-between rounded-2xl border-border bg-card px-3.5 shadow-sm">
             <span className="flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Users className="h-4 w-4" /></span>
               <span className="text-left">
-                <span className="block text-xs font-bold">My Bids History</span>
-                <span className="block text-[10px] font-normal text-muted-foreground">View your auction activity.</span>
+                <span className="block text-xs font-bold">{t("profile.myBidsHistory")}</span>
+                <span className="block text-[10px] font-normal text-muted-foreground">{t("profile.myBidsHistoryDescription")}</span>
               </span>
             </span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Button>
           <Button variant="outline" onClick={handleLogout} className="h-11 w-full rounded-2xl border-destructive/20 bg-destructive/5 text-xs font-bold text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive">
-            <LogOut className="mr-2 h-4 w-4" /> Log Out
+            <LogOut className="mr-2 h-4 w-4" /> {t("profile.logOut")}
           </Button>
         </section>
 
@@ -371,7 +372,7 @@ export default function Profile() {
             <Sparkles className="h-3 w-3 text-primary" />
             <p className="text-xs font-extrabold tracking-wide">CHERETA</p>
           </div>
-          <p className="text-[10px] text-muted-foreground">Your marketplace, your opportunity.</p>
+          <p className="text-[10px] text-muted-foreground">{t("profile.footerTagline")}</p>
           <p className="pt-1 text-[9px] text-muted-foreground/60">Version 1.0.1</p>
         </div>
 

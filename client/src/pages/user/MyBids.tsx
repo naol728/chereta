@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getMyAuction } from "@/api/auction";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
     ArrowUpRight,
     X,
@@ -59,7 +60,6 @@ function BidCardSkeleton() {
     return (
         <Card className="overflow-hidden rounded-2xl border-border bg-card shadow-sm">
             <CardContent className="p-3.5">
-                {/* Top: Image, Title, Status */}
                 <div className="flex items-start justify-between gap-2.5">
                     <div className="flex gap-2.5">
                         <Skeleton className="h-14 w-14 shrink-0 rounded-lg" />
@@ -74,7 +74,6 @@ function BidCardSkeleton() {
 
                 <div className="my-3 h-px w-full bg-border" />
 
-                {/* Middle: Your Bid & Code */}
                 <div className="flex items-end justify-between gap-2">
                     <div className="space-y-1.5">
                         <Skeleton className="h-2 w-16" />
@@ -83,7 +82,6 @@ function BidCardSkeleton() {
                     <Skeleton className="h-2.5 w-20" />
                 </div>
 
-                {/* Bottom: Winning Amount */}
                 <div className="mt-3 space-y-1.5">
                     <Skeleton className="h-2 w-20" />
                     <Skeleton className="h-5 w-28" />
@@ -98,6 +96,7 @@ function BidCardSkeleton() {
 // ============================================================
 
 export default function MyBids() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState("all");
 
@@ -115,7 +114,7 @@ export default function MyBids() {
 
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text);
-        toast.success("Copied!");
+        toast.success(t("myBids.copied"));
     };
 
     // Filter bids based on selected pill
@@ -133,9 +132,9 @@ export default function MyBids() {
         return (
             <div className="flex min-h-[50vh] flex-col items-center justify-center bg-background p-6 text-center">
                 <Package className="mb-2 h-8 w-8 text-muted-foreground" />
-                <h3 className="text-sm font-bold text-foreground">Failed to load bids</h3>
+                <h3 className="text-sm font-bold text-foreground">{t("myBids.failedToLoad")}</h3>
                 <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
-                    <RefreshCw className="mr-2 h-3.5 w-3.5" /> Try Again
+                    <RefreshCw className="mr-2 h-3.5 w-3.5" /> {t("myBids.tryAgain")}
                 </Button>
             </div>
         );
@@ -148,16 +147,13 @@ export default function MyBids() {
     if (isLoading) {
         return (
             <div className="min-h-[100dvh] w-full bg-background p-3 pb-24 font-sans text-foreground">
-                {/* Header Skeleton */}
                 <div className="mb-3 space-y-2">
                     <Skeleton className="h-2.5 w-24" />
                     <Skeleton className="h-5 w-48" />
                 </div>
 
-                {/* Summary Skeleton */}
                 <SummarySkeleton />
 
-                {/* Filter Pills Skeleton */}
                 <div className="mb-4 flex gap-1.5 overflow-hidden">
                     <Skeleton className="h-7 w-16 rounded-full shrink-0" />
                     <Skeleton className="h-7 w-14 rounded-full shrink-0" />
@@ -165,7 +161,6 @@ export default function MyBids() {
                     <Skeleton className="h-7 w-20 rounded-full shrink-0" />
                 </div>
 
-                {/* Bid Cards Skeleton */}
                 <div className="flex flex-col gap-3">
                     {Array.from({ length: 3 }).map((_, i) => (
                         <BidCardSkeleton key={i} />
@@ -185,10 +180,10 @@ export default function MyBids() {
             {/* Header */}
             <div className="mb-3">
                 <p className="text-[10px] font-bold text-primary uppercase tracking-wider">
-                    የቁጥር መዝገብዎ
+                    {t("myBids.registerTitle")}
                 </p>
                 <h1 className="mt-0.5 text-xl font-extrabold leading-tight tracking-tight text-foreground">
-                    ሁሉም ጨረታ፣ በአንድ መዝገብ።
+                    {t("myBids.registerSubtitle")}
                 </h1>
             </div>
 
@@ -196,37 +191,37 @@ export default function MyBids() {
             <div className="mb-4 flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-sm">
                 <div className="flex flex-col items-center">
                     <span className="text-lg font-bold text-card-foreground">{totalBids}</span>
-                    <span className="mt-0.5 text-[9px] font-medium text-muted-foreground">ንቁ</span>
+                    <span className="mt-0.5 text-[9px] font-medium text-muted-foreground">{t("myBids.active")}</span>
                 </div>
                 <div className="h-8 w-px bg-border" />
                 <div className="flex flex-col items-center">
                     <span className="text-lg font-bold text-card-foreground">{uniqueBids}</span>
-                    <span className="mt-0.5 text-[9px] font-medium text-muted-foreground">ብቸኛ</span>
+                    <span className="mt-0.5 text-[9px] font-medium text-muted-foreground">{t("myBids.unique")}</span>
                 </div>
                 <div className="h-8 w-px bg-border" />
                 <div className="flex flex-col items-center">
                     <span className="text-lg font-bold text-destructive">{lostBids}</span>
-                    <span className="mt-0.5 text-[9px] font-medium text-muted-foreground">ድሎች</span>
+                    <span className="mt-0.5 text-[9px] font-medium text-muted-foreground">{t("myBids.lost")}</span>
                 </div>
             </div>
 
             {/* Filter Pills */}
             <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {[
-                    { id: "all", label: "ሁሉም" },
-                    { id: "unique", label: "ብቸኛ" },
-                    { id: "pending", label: "በመጠባበቅ ላይ" },
-                    { id: "lost", label: "አልተሳካም" },
-                ].map((filter, idx) => (
+                    { id: "all", labelKey: "myBids.filters.all" },
+                    { id: "unique", labelKey: "myBids.filters.unique" },
+                    { id: "pending", labelKey: "myBids.filters.pending" },
+                    { id: "lost", labelKey: "myBids.filters.lost" },
+                ].map((filter) => (
                     <button
-                        key={idx}
+                        key={filter.id}
                         onClick={() => setActiveFilter(filter.id)}
                         className={`shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-bold transition-colors ${activeFilter === filter.id
                             ? "bg-primary text-primary-foreground shadow-sm"
                             : "border border-border bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground"
                             }`}
                     >
-                        {filter.label}
+                        {t(filter.labelKey)}
                     </button>
                 ))}
             </div>
@@ -236,7 +231,7 @@ export default function MyBids() {
                 {filteredBids.length === 0 ? (
                     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card py-10">
                         <Package className="mb-2 h-6 w-6 text-muted-foreground/50" />
-                        <p className="text-xs font-medium text-muted-foreground">ምንም ጨረታ አልተገኘም</p>
+                        <p className="text-xs font-medium text-muted-foreground">{t("myBids.noBidsFound")}</p>
                     </div>
                 ) : (
                     filteredBids.map((bid) => {
@@ -281,7 +276,7 @@ export default function MyBids() {
                                                     ) : (
                                                         <X className="h-2.5 w-2.5" />
                                                     )}
-                                                    {bid.is_unique ? "ብቸኛ" : "ድሎኛል"}
+                                                    {bid.is_unique ? t("myBids.statusWon") : t("myBids.statusLost")}
                                                 </div>
                                             </div>
                                         </div>
@@ -301,7 +296,7 @@ export default function MyBids() {
                                     {/* Middle: Your Bid & Code */}
                                     <div className="flex items-end justify-between gap-2">
                                         <div>
-                                            <p className="text-[9px] font-bold text-muted-foreground">የእርስዎ ቁጥር</p>
+                                            <p className="text-[9px] font-bold text-muted-foreground">{t("myBids.yourBid")}</p>
                                             <p className="mt-0.5 text-sm font-extrabold text-card-foreground">
                                                 {formatAmount(bid.bid_amount, bid.auction?.currency)}
                                             </p>
@@ -311,7 +306,7 @@ export default function MyBids() {
                                                 <span>bid-{bid.id.split('-')[0].toUpperCase()}</span>
                                                 <button
                                                     onClick={(e) => {
-                                                        e.stopPropagation(); // Prevent card navigation when copying
+                                                        e.stopPropagation();
                                                         handleCopy(bid.id);
                                                     }}
                                                     className="p-0.5 hover:text-foreground"
@@ -325,7 +320,7 @@ export default function MyBids() {
                                     {/* Bottom: Winning Amount */}
                                     <div className="mt-2 flex justify-between items-end">
                                         <div>
-                                            <p className="text-[9px] font-bold text-muted-foreground">የአሸናፊ ጨረታ</p>
+                                            <p className="text-[9px] font-bold text-muted-foreground">{t("myBids.winningBid")}</p>
                                             <p className="mt-0.5 text-base font-extrabold text-primary">
                                                 {formatAmount(bid.auction?.starting_bid || 0, bid.auction?.currency)}
                                             </p>

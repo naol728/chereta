@@ -1,43 +1,42 @@
 /* eslint-disable */
 // @ts-nocheck
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function BidStep() {
+    const { t } = useTranslation();
+
     const steps = [
         {
             id: "01",
-            title: "ቁጥር ይምረጡ",
-            description:
-                "ከዝቅተኛው ይጀምሩና ሌላ ሰው አይመርጠውም የሚሉትን መጠን ይምረጡ።",
+            titleKey: "bidStep.steps.chooseNumber.title",
+            descriptionKey: "bidStep.steps.chooseNumber.description",
             active: true,
         },
         {
             id: "02",
-            title: "የመግቢያ ክፍያውን ይክፈሉ",
-            description:
-                "የመግቢያ ክፍያውን በቴሌብር ወይም በሲቢኤ ብር ያጸድቁ። ቁጥርዎ ክፍያው ሲሳካ ብቻ ይገባል።",
+            titleKey: "bidStep.steps.payEntryFee.title",
+            descriptionKey: "bidStep.steps.payEntryFee.description",
             active: false,
         },
         {
             id: "03",
-            title: "ልዩ ሆነው ይቆዩ",
-            description:
-                "ሌላ ተጫራች ቁጥርዎን ካዘመደው ሁለቱም ከውድድሩ ይወጣሉ። ዝቅተኛው ልዩ ቁጥር ያሸንፋል።",
+            titleKey: "bidStep.steps.stayUnique.title",
+            descriptionKey: "bidStep.steps.stayUnique.description",
             active: false,
         },
     ];
 
     return (
-        // Simplified container: no min-h-screen, no safe area padding
         <div className="w-full bg-background px-4 py-5 text-foreground">
 
             {/* Header Section */}
             <div className="mb-5">
                 <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-primary">
-                    ቀላል ስልት
+                    {t("bidStep.simpleStrategy")}
                 </p>
                 <h2 className="text-xl font-extrabold leading-tight tracking-tight">
-                    ለማሸነፍ ሶስት እርምጃዎች
+                    {t("bidStep.threeStepsToWin")}
                 </h2>
             </div>
 
@@ -68,10 +67,10 @@ export default function BidStep() {
                             {/* Right Column: Text Content */}
                             <div className={`min-w-0 pt-1.5 ${isLast ? "pb-0" : "pb-6"}`}>
                                 <h3 className="mb-1 text-[15px] font-bold leading-snug text-foreground">
-                                    {step.title}
+                                    {t(step.titleKey)}
                                 </h3>
                                 <p className="text-[13px] leading-relaxed text-muted-foreground">
-                                    {step.description}
+                                    {t(step.descriptionKey)}
                                 </p>
                             </div>
                         </div>

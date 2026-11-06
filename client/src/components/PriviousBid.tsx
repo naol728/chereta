@@ -2,6 +2,7 @@
 // @ts-nocheck
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { getPreviousSetteldAuctions } from "@/api/auction";
 
@@ -78,6 +79,8 @@ const formatAmount = (amount: number, currency = "ETB") => {
 // ============================================================
 
 export default function PreviousBid() {
+    const { t } = useTranslation();
+
     const {
         data,
         isLoading,
@@ -94,7 +97,6 @@ export default function PreviousBid() {
     const pagination = data?.pagination;
 
     return (
-        // Removed min-h-screen to fit inside layout
         <div className="w-full bg-background pb-4 text-foreground">
 
             {/* Compact Header */}
@@ -103,7 +105,7 @@ export default function PreviousBid() {
                     <div className="flex items-center gap-1.5">
                         <History className="h-4 w-4 text-primary" />
                         <h1 className="text-base font-extrabold tracking-tight">
-                            Previous Auctions
+                            {t("previousBid.title")}
                         </h1>
                     </div>
                 </div>
@@ -138,9 +140,9 @@ export default function PreviousBid() {
             {isError && !isLoading && (
                 <div className="mx-4 flex flex-col items-center rounded-xl border border-border bg-card px-4 py-6 text-center">
                     <Package className="mb-2 h-6 w-6 text-muted-foreground" />
-                    <h3 className="text-xs font-bold">Unable to load auctions</h3>
+                    <h3 className="text-xs font-bold">{t("previousBid.unableToLoad")}</h3>
                     <Button onClick={() => refetch()} className="mt-3 h-7 text-xs" size="sm">
-                        Try again
+                        {t("previousBid.tryAgain")}
                     </Button>
                 </div>
             )}
@@ -151,9 +153,9 @@ export default function PreviousBid() {
                     <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                         <Gavel className="h-5 w-5 text-muted-foreground" />
                     </div>
-                    <h3 className="text-xs font-bold">No previous auctions</h3>
+                    <h3 className="text-xs font-bold">{t("previousBid.noPreviousAuctions")}</h3>
                     <p className="mt-1 max-w-[200px] text-[10px] text-muted-foreground">
-                        Ended auctions will appear here when they become available.
+                        {t("previousBid.noPreviousAuctionsDescription")}
                     </p>
                 </div>
             )}
@@ -167,9 +169,9 @@ export default function PreviousBid() {
                         const image = item?.image_url || item?.images?.[0] || null;
                         const winnerUser = winnerRecord.winner;
 
-                        const fullName = [winnerUser?.Fname, winnerUser?.Lname]
-                            .filter(Boolean)
-                            .join(" ") || "Unknown User";
+                        const fullName =
+                            [winnerUser?.Fname, winnerUser?.Lname].filter(Boolean).join(" ") ||
+                            t("previousBid.unknownUser");
 
                         return (
                             <div
@@ -181,7 +183,7 @@ export default function PreviousBid() {
                                     {image ? (
                                         <img
                                             src={image}
-                                            alt={item?.title || "Auction item"}
+                                            alt={item?.title || t("previousBid.auctionItem")}
                                             loading="lazy"
                                             className="h-full w-full object-cover"
                                         />
@@ -196,7 +198,7 @@ export default function PreviousBid() {
                                 <div className="min-w-0 flex-1 flex flex-col gap-1">
                                     {/* Title */}
                                     <h2 className="truncate text-xs font-bold">
-                                        {item?.title || "Auction item"}
+                                        {item?.title || t("previousBid.auctionItem")}
                                     </h2>
 
                                     {/* Winner Info - tiny text */}
@@ -219,7 +221,7 @@ export default function PreviousBid() {
                                     <div className="flex items-center justify-between gap-2 mt-0.5">
                                         <Badge className="gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0 text-[9px] text-emerald-600 hover:bg-emerald-500/10">
                                             <Trophy className="h-2 w-2" />
-                                            Won
+                                            {t("previousBid.won")}
                                         </Badge>
 
                                         <p className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
@@ -236,7 +238,10 @@ export default function PreviousBid() {
             {/* Pagination */}
             {!isLoading && !isError && winners.length > 0 && (
                 <p className="mt-3 text-center text-[10px] text-muted-foreground">
-                    Showing {winners.length} of {pagination?.total ?? winners.length}
+                    {t("previousBid.showing", {
+                        shown: winners.length,
+                        total: pagination?.total ?? winners.length,
+                    })}
                 </p>
             )}
         </div>

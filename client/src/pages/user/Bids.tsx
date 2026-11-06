@@ -3,6 +3,7 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ChevronLeft,
   ChevronRight,
@@ -84,12 +85,6 @@ const formatAmount = (amount: number, currency = "ETB") => {
   }).format(amount) + ` ${currency}`;
 };
 
-const conditionLabel: Record<AuctionItem["condition"], string> = {
-  new: "New",
-  used: "Used",
-  refurbished: "Refurbished",
-};
-
 const conditionStyles: Record<AuctionItem["condition"], string> = {
   new: "bg-primary/10 text-primary border-primary/20",
   used: "bg-muted text-muted-foreground border-border",
@@ -121,6 +116,7 @@ function getTimeRemaining(endTime: string) {
 // ============================================================
 
 function CountdownTimer({ endsAt }: { endsAt: string }) {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState(getTimeRemaining(endsAt));
 
   useEffect(() => {
@@ -135,7 +131,7 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
     return (
       <div className="flex items-center justify-center gap-1 text-[10px] font-bold text-destructive">
         <Clock className="h-3 w-3" />
-        Auction Ended
+        {t("bidsPage.auctionEnded")}
       </div>
     );
   }
@@ -194,6 +190,7 @@ function ProductSkeleton() {
 // ============================================================
 
 export default function Bids() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -266,14 +263,14 @@ export default function Bids() {
             <div className="mb-1.5 flex items-center gap-2">
               <span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-destructive">
-                በቀጥታ ጨረታ
+                {t("bidsPage.liveAuction")}
               </p>
             </div>
             <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
-              አሁን ቅረብ
+              {t("bidsPage.bidNow")}
             </h2>
             <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-              Discover live auctions and participate.
+              {t("bidsPage.subtitle")}
             </p>
           </div>
 
@@ -283,7 +280,7 @@ export default function Bids() {
             className="h-9 w-9 shrink-0 rounded-full border-border bg-card"
             onClick={() => refetch()}
             disabled={isFetching}
-            aria-label="Refresh auctions"
+            aria-label={t("bidsPage.refreshAuctions")}
           >
             <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
           </Button>
@@ -297,7 +294,7 @@ export default function Bids() {
               <Input
                 value={search}
                 onChange={(event) => changeSearch(event.target.value)}
-                placeholder="Search auctions..."
+                placeholder={t("bidsPage.searchPlaceholder")}
                 className="h-11 rounded-xl border-border bg-card pl-9"
               />
               {search && (
@@ -305,7 +302,7 @@ export default function Bids() {
                   type="button"
                   onClick={() => changeSearch("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  aria-label="Clear search"
+                  aria-label={t("bidsPage.clearSearch")}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -321,7 +318,7 @@ export default function Bids() {
                 setSearch("");
                 setPage(1);
               }}
-              aria-label="Clear filters"
+              aria-label={t("bidsPage.clearFilters")}
             >
               <SlidersHorizontal className="h-4 w-4" />
             </Button>
@@ -338,7 +335,7 @@ export default function Bids() {
                   : "border-border bg-card text-muted-foreground hover:bg-muted"
                   }`}
               >
-                {value === "All" ? "ሁሉም" : value}
+                {value === "All" ? t("bidsPage.all") : value}
               </button>
             ))}
           </div>
@@ -347,9 +344,9 @@ export default function Bids() {
         {/* List Heading */}
         <div className="mb-3 flex items-center justify-between gap-3 pt-2">
           <div>
-            <h3 className="text-base font-bold">Live Auctions</h3>
+            <h3 className="text-base font-bold">{t("bidsPage.liveAuctions")}</h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {pagination?.total ?? 0} auctions available
+              {t("bidsPage.auctionsAvailable", { count: pagination?.total ?? 0 })}
             </p>
           </div>
         </div>
@@ -370,12 +367,12 @@ export default function Bids() {
               <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
                 <RefreshCw className="h-5 w-5" />
               </div>
-              <h3 className="font-bold">Unable to load auctions</h3>
+              <h3 className="font-bold">{t("bidsPage.unableToLoad")}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Something went wrong while fetching the live data.
+                {t("bidsPage.unableToLoadDescription")}
               </p>
               <Button onClick={() => refetch()} className="mt-4 rounded-xl" size="sm">
-                Try again
+                {t("bidsPage.tryAgain")}
               </Button>
             </CardContent>
           </Card>
@@ -386,9 +383,9 @@ export default function Bids() {
           <Card className="rounded-2xl border-dashed bg-card">
             <CardContent className="flex flex-col items-center px-5 py-10 text-center">
               <Package className="mb-3 h-10 w-10 text-muted-foreground/50" />
-              <h3 className="font-bold">No live auctions found</h3>
+              <h3 className="font-bold">{t("bidsPage.noAuctionsFound")}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Try another search term or category.
+                {t("bidsPage.noAuctionsDescription")}
               </p>
               <Button
                 variant="outline"
@@ -400,7 +397,7 @@ export default function Bids() {
                   setPage(1);
                 }}
               >
-                Clear filters
+                {t("bidsPage.clearFilters")}
               </Button>
             </CardContent>
           </Card>
@@ -440,13 +437,13 @@ export default function Bids() {
                       className={`absolute right-3 top-3 rounded-full border px-2.5 py-1 text-[10px] font-semibold shadow-sm ${conditionStyles[item.condition]
                         }`}
                     >
-                      {conditionLabel[item.condition]}
+                      {t(`bidsPage.condition.${item.condition}`)}
                     </Badge>
 
                     {/* Live Indicator */}
                     <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-destructive px-2.5 py-1 text-[10px] font-bold text-destructive-foreground shadow-lg">
                       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-                      LIVE
+                      {t("bidsPage.live")}
                     </div>
                   </div>
 
@@ -457,14 +454,14 @@ export default function Bids() {
                     </h3>
 
                     <p className="mt-1 line-clamp-2 min-h-9 text-xs leading-relaxed text-muted-foreground">
-                      {item.description || "Discover this product on Chereta."}
+                      {item.description || t("bidsPage.discoverProduct")}
                     </p>
 
                     {/* Price & Bids */}
                     <div className="my-3 flex items-center justify-between border-y border-border/60 py-2.5">
                       <div className="min-w-0">
                         <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                          Starting Bid
+                          {t("bidsPage.startingBid")}
                         </p>
                         <p className="mt-0.5 text-sm font-bold text-primary">
                           {formatAmount(auction.starting_bid, auction.currency)}
@@ -475,7 +472,7 @@ export default function Bids() {
 
                       <div className="min-w-0 text-right">
                         <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                          Total Bids
+                          {t("bidsPage.totalBids")}
                         </p>
                         <p className="mt-0.5 text-sm font-bold text-foreground">
                           {auction.total_bids.toLocaleString()}
@@ -486,7 +483,7 @@ export default function Bids() {
                     {/* End Date & Countdown */}
                     <div className="mb-3 space-y-2">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground">Auction Ends</span>
+                        <span className="text-muted-foreground">{t("bidsPage.auctionEnds")}</span>
                         <span className="font-semibold text-foreground">{formatDate(auction.ends_at)}</span>
                       </div>
                       <CountdownTimer endsAt={auction.ends_at} />
@@ -499,7 +496,7 @@ export default function Bids() {
                         onClick={() => handleViewProduct(auction.id)}
                       >
                         <Gavel className="mr-2 h-4 w-4" />
-                        View Auction
+                        {t("bidsPage.viewAuction")}
                         <ArrowUpRight className="ml-auto h-4 w-4 opacity-70" />
                       </Button>
                     </div>
@@ -524,11 +521,14 @@ export default function Bids() {
               }}
             >
               <ChevronLeft className="mr-1 h-4 w-4" />
-              Prev
+              {t("bidsPage.previous")}
             </Button>
 
             <span className="text-xs font-medium text-muted-foreground">
-              Page {pagination.page} of {pagination.totalPages}
+              {t("bidsPage.pageOf", {
+                page: pagination.page,
+                totalPages: pagination.totalPages,
+              })}
             </span>
 
             <Button
@@ -541,7 +541,7 @@ export default function Bids() {
                 scrollToTop();
               }}
             >
-              Next
+              {t("bidsPage.next")}
               <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
