@@ -40,12 +40,12 @@ export const createItem = async (formData: FormData) => {
 };
 export const updateItem = async ({
   id,
-  formData,
+  payload,
 }: {
   id: string;
-  formData: FormData;
+  payload: FormData;
 }) => {
-  const response = await apiClient.patch(`/admin/item/${id}`, formData, {
+  const response = await apiClient.patch(`/admin/item/${id}`, payload, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
