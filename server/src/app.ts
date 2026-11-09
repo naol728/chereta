@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
 import authRoute from "./routes/auth.route";
+import AdminRoute from "./routes/admin.route";
 import AuctionRoute from "./routes/auction.route";
 import { globalErrorHandler } from "./middleware/globalErrorhandler";
 import ReferalRoute from "./routes/referal.route";
@@ -29,6 +30,7 @@ app.get("/health", (_req, res) => {
 });
 app.use("/auth", authRoute);
 app.use("/auction", AuctionRoute);
+app.use("/admin", AdminRoute);
 app.use("/ref", ReferalRoute);
 
 // app.get("/", (_, res) => {
