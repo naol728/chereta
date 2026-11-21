@@ -15,36 +15,38 @@ import { checkIsAdmin } from "@/api/admin";
 
 const titles: Record<string, string> = {
     "/admin": "Overview",
-    "/admin/users": "Users",
+    "/admin/settlements": "Settlements",
     "/admin/items": "Items",
     "/admin/auctions": "Auctions",
     "/admin/transactions": "Transactions",
+    "/admin/auctionbids": "Auction Bids",
+    "/admin/profile": "Admin Profile",
 };
 
 function LoadingScreen() {
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background">
-            <Loader2 className="size-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">
-                Verifying  permissions...
+        < div className="flex min-h-screen flex-col items-center justify-center gap-2 bg-background px-4" >
+            <Loader2 className="size-6 animate-spin text-primary" />
+            <p className="text-xs text-muted-foreground">
+                Verifying permissions...
             </p>
-        </div>
+        </ div>
     );
 }
 
 function Unauthorized() {
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 text-center">
-            <div className="flex size-16 items-center justify-center rounded-full bg-destructive/10">
-                <ShieldAlert className="size-8 text-destructive" />
+        <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10">
+                <ShieldAlert className="size-7 text-destructive" />
             </div>
 
-            <div className="space-y-2">
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            <div className="space-y-1.5">
+                <h1 className="text-xl font-bold tracking-tight text-foreground">
                     Unauthorized Access
                 </h1>
 
-                <p className="max-w-md text-sm text-muted-foreground">
+                <p className="max-w-xs text-xs text-muted-foreground">
                     You don't have permission to access the admin dashboard.
                     Please contact the administrator if you believe this is a mistake.
                 </p>
@@ -83,17 +85,18 @@ export default function AdminLayout() {
             <AppSidebar />
 
             <SidebarInset>
-                <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                    <SidebarTrigger className="-ml-1" />
+                {/* Telegram mini app: shorter header, tighter padding */}
+                <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                    <SidebarTrigger className="-ml-1 h-7 w-7" />
 
-                    <Separator orientation="vertical" className="h-5" />
+                    <Separator orientation="vertical" className="h-4" />
 
-                    <h1 className="text-sm font-semibold tracking-tight text-foreground">
+                    <h1 className="text-xs font-semibold tracking-tight text-foreground">
                         {title}
                     </h1>
                 </header>
 
-                <div className="flex-1 ">
+                <div className="flex-1">
                     <Outlet />
                 </div>
             </SidebarInset>

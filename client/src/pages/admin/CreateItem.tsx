@@ -145,40 +145,40 @@ export default function CreateItem() {
     };
 
     return (
-        <div className=" w-full space-y-5">
-            {/* Compact header — dialog already has a title, this is a visual badge row */}
-            <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <PackagePlus className="h-5 w-5" />
+        <div className="w-full space-y-4">
+            {/* Compact header */}
+            <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <PackagePlus className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                    <p className="text-sm font-semibold">New Item Details</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs font-semibold">New Item Details</p>
+                    <p className="text-[10px] text-muted-foreground">
                         Fill in the form below to add a new auction item.
                     </p>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="w-full space-y-5">
+            <form onSubmit={handleSubmit} className="w-full space-y-4">
                 {/* Basic Information */}
                 <Card>
-                    <CardHeader className="p-4 sm:p-6">
-                        <CardTitle className="text-base sm:text-lg">
+                    <CardHeader className="p-3">
+                        <CardTitle className="text-sm">
                             Basic Information
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-xs">
                             Provide the core details of the item.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4 p-4 pt-0 sm:space-y-5 sm:p-6 sm:pt-0">
+                    <CardContent className="space-y-3 p-3 pt-0">
                         {/* Title */}
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <div className="flex items-center justify-between gap-2">
-                                <Label htmlFor="title">
+                                <Label htmlFor="title" className="text-xs">
                                     Item Title{" "}
                                     <span className="text-destructive">*</span>
                                 </Label>
-                                <span className="shrink-0 text-xs text-muted-foreground">
+                                <span className="shrink-0 text-[10px] text-muted-foreground">
                                     {title.length}/150
                                 </span>
                             </div>
@@ -190,30 +190,36 @@ export default function CreateItem() {
                                 placeholder="e.g. iPhone 15 Pro Max"
                                 maxLength={150}
                                 required
+                                className="h-8 text-xs"
                             />
                         </div>
 
                         {/* Description */}
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="description" className="text-xs">
+                                Description
+                            </Label>
                             <Textarea
                                 id="description"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Describe the item, its features, and other details..."
-                                rows={4}
-                                className="resize-y"
+                                rows={3}
+                                className="resize-y text-xs"
                             />
                         </div>
 
                         {/* Category */}
-                        <div className="space-y-2">
-                            <Label htmlFor="category">Category</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="category" className="text-xs">
+                                Category
+                            </Label>
                             <Input
                                 id="category"
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
                                 placeholder="e.g. Electronics, Fashion, Vehicles"
+                                className="h-8 text-xs"
                             />
                         </div>
                     </CardContent>
@@ -221,41 +227,40 @@ export default function CreateItem() {
 
                 {/* Item Images */}
                 <Card>
-                    <CardHeader className="p-4 sm:p-6">
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0 space-y-1.5">
-                                <CardTitle className="text-base sm:text-lg">
+                    <CardHeader className="p-3">
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 space-y-0.5">
+                                <CardTitle className="text-sm">
                                     Item Images
                                 </CardTitle>
-                                <CardDescription>
-                                    Upload up to {MAX_IMAGES} images. The first image
-                                    will be the cover.
+                                <CardDescription className="text-xs">
+                                    Upload up to {MAX_IMAGES} images. First is the cover.
                                 </CardDescription>
                             </div>
 
-                            <Badge variant="secondary" className="shrink-0">
+                            <Badge variant="secondary" className="shrink-0 text-[10px]">
                                 {images.length}/{MAX_IMAGES}
                             </Badge>
                         </div>
                     </CardHeader>
 
-                    <CardContent className="space-y-4 p-4 pt-0 sm:space-y-5 sm:p-6 sm:pt-0">
+                    <CardContent className="space-y-3 p-3 pt-0">
                         {/* Upload Area */}
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={images.length >= MAX_IMAGES}
-                            className="flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/30 px-4 py-8 text-center transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60 sm:py-10"
+                            className="flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/30 px-3 py-6 text-center transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary sm:h-12 sm:w-12">
-                                <ImagePlus className="h-5 w-5 sm:h-6 sm:w-6" />
+                            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                <ImagePlus className="h-5 w-5" />
                             </div>
 
-                            <p className="text-sm font-medium">
+                            <p className="text-xs font-medium">
                                 Click to upload images
                             </p>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                                JPEG, PNG, WEBP or AVIF · Maximum 5MB each
+                            <p className="mt-0.5 text-[10px] text-muted-foreground">
+                                JPEG, PNG, WEBP or AVIF · Max 5MB each
                             </p>
 
                             <input
@@ -271,11 +276,11 @@ export default function CreateItem() {
 
                         {/* Image Previews */}
                         {images.length > 0 && (
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
+                            <div className="grid grid-cols-2 gap-2">
                                 {previews.map((preview, index) => (
                                     <div
                                         key={`${images[index].name}-${index}`}
-                                        className="group relative aspect-square overflow-hidden rounded-xl border bg-muted"
+                                        className="group relative aspect-square overflow-hidden rounded-lg border bg-muted"
                                     >
                                         <img
                                             src={preview}
@@ -286,7 +291,7 @@ export default function CreateItem() {
                                         {index === 0 && (
                                             <Badge
                                                 variant="secondary"
-                                                className="absolute bottom-1.5 left-1.5 bg-background/90 text-foreground backdrop-blur sm:bottom-2 sm:left-2"
+                                                className="absolute bottom-1 left-1 px-1.5 py-0 text-[9px] bg-background/90 text-foreground backdrop-blur"
                                             >
                                                 Cover
                                             </Badge>
@@ -298,9 +303,9 @@ export default function CreateItem() {
                                             size="icon"
                                             onClick={() => removeImage(index)}
                                             aria-label={`Remove image ${index + 1}`}
-                                            className="absolute right-1.5 top-1.5 h-7 w-7 rounded-full opacity-90 transition-opacity hover:opacity-100 sm:right-2 sm:top-2"
+                                            className="absolute right-1 top-1 h-6 w-6 rounded-full opacity-90 transition-opacity hover:opacity-100"
                                         >
-                                            <X className="h-4 w-4" />
+                                            <X className="h-3 w-3" />
                                         </Button>
                                     </div>
                                 ))}
@@ -311,24 +316,26 @@ export default function CreateItem() {
 
                 {/* Item Settings */}
                 <Card>
-                    <CardHeader className="p-4 sm:p-6">
-                        <CardTitle className="text-base sm:text-lg">
+                    <CardHeader className="p-3">
+                        <CardTitle className="text-sm">
                             Item Settings
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-xs">
                             Set the condition and publishing status.
                         </CardDescription>
                     </CardHeader>
 
-                    <CardContent className="grid gap-4 p-4 pt-0 sm:grid-cols-2 sm:gap-5 sm:p-6 sm:pt-0">
+                    <CardContent className="grid gap-3 p-3 pt-0">
                         {/* Condition */}
-                        <div className="space-y-2">
-                            <Label htmlFor="condition">Condition</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="condition" className="text-xs">
+                                Condition
+                            </Label>
                             <Select
                                 value={condition}
                                 onValueChange={(v) => setCondition(v as ItemCondition)}
                             >
-                                <SelectTrigger id="condition" className="w-full">
+                                <SelectTrigger id="condition" className="h-8 w-full text-xs">
                                     <SelectValue placeholder="Select condition" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -340,13 +347,15 @@ export default function CreateItem() {
                         </div>
 
                         {/* Status */}
-                        <div className="space-y-2">
-                            <Label htmlFor="status">Status</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="status" className="text-xs">
+                                Status
+                            </Label>
                             <Select
                                 value={status}
                                 onValueChange={(v) => setStatus(v as ItemStatus)}
                             >
-                                <SelectTrigger id="status" className="w-full">
+                                <SelectTrigger id="status" className="h-8 w-full text-xs">
                                     <SelectValue placeholder="Select status" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -360,30 +369,32 @@ export default function CreateItem() {
                 </Card>
 
                 {/* Submit */}
-                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+                <div className="flex flex-col-reverse gap-2">
                     <Button
                         type="button"
                         variant="outline"
+                        size="sm"
                         disabled={isPending}
                         onClick={handleReset}
-                        className="w-full sm:w-auto"
+                        className="w-full text-xs"
                     >
                         Reset
                     </Button>
 
                     <Button
                         type="submit"
+                        size="sm"
                         disabled={isPending || !title.trim()}
-                        className="w-full sm:w-auto"
+                        className="w-full text-xs"
                     >
                         {isPending ? (
                             <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 Creating...
                             </>
                         ) : (
                             <>
-                                <Upload className="h-4 w-4" />
+                                <Upload className="h-3.5 w-3.5" />
                                 Create Item
                             </>
                         )}

@@ -19,12 +19,13 @@ import Loading from "./components/Loading";
 import PaymentPage from "./pages/user/PaymentPage";
 import AdminLayout from "./layout/AdminLayout.";
 import Overview from "./pages/admin/Overview";
-import Users from "./pages/admin/Users";
+import Settlements from "./pages/admin/Settlements";
 import Items from "./pages/admin/Items";
 import Auctions from "./pages/admin/Auctions";
 import Transactions from "./pages/admin/Transactions";
 import Item from "./pages/admin/Item";
 import CreateItem from "./pages/admin/CreateItem";
+import AuctionBids from "./pages/admin/Auctionbids";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -93,10 +94,12 @@ function App() {
 
       <Route path="/admin" element={<AdminLayout />} >
         <Route index element={<Overview />} />
-        <Route path="users" element={<Users />} />
+        <Route path="settlements" element={<Settlements />} />
         <Route path="items" element={<Items />} />
         <Route path="auctions" element={<Auctions />} />
         <Route path="transactions" element={<Transactions />} />
+        <Route path="auctionbids" element={<AuctionBids />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="items/new" element={<CreateItem />} />
         <Route path="items/:id" element={<Item />} />
       </Route>

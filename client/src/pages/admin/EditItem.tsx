@@ -141,8 +141,8 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
         onError: (err: any) => {
             toast.error(
                 err?.response?.data?.message ||
-                    err?.message ||
-                    "Failed to update item."
+                err?.message ||
+                "Failed to update item."
             );
         },
 
@@ -234,15 +234,15 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
     };
 
     return (
-        <div className="w-full space-y-5">
+        <div className="w-full space-y-4">
             {/* Header */}
-            <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <PackagePlus className="h-5 w-5" />
+            <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <PackagePlus className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                    <p className="text-sm font-semibold">Edit Item Details</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs font-semibold">Edit Item Details</p>
+                    <p className="text-[10px] text-muted-foreground">
                         Update the details below to save your changes.
                     </p>
                 </div>
@@ -250,27 +250,27 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
 
             <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="w-full space-y-5"
+                className="w-full space-y-4"
             >
                 {/* Basic Information */}
                 <Card>
-                    <CardHeader className="p-4 sm:p-6">
-                        <CardTitle className="text-base sm:text-lg">
+                    <CardHeader className="p-3">
+                        <CardTitle className="text-sm">
                             Basic Information
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-xs">
                             Update the core details of the item.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4 p-4 pt-0 sm:space-y-5 sm:p-6 sm:pt-0">
+                    <CardContent className="space-y-3 p-3 pt-0">
                         {/* Title */}
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <div className="flex items-center justify-between gap-2">
-                                <Label htmlFor="edit-title">
+                                <Label htmlFor="edit-title" className="text-xs">
                                     Item Title{" "}
                                     <span className="text-destructive">*</span>
                                 </Label>
-                                <span className="shrink-0 text-xs text-muted-foreground">
+                                <span className="shrink-0 text-[10px] text-muted-foreground">
                                     {title.length}/150
                                 </span>
                             </div>
@@ -279,6 +279,7 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
                                 placeholder="e.g. iPhone 15 Pro Max"
                                 maxLength={150}
                                 aria-invalid={!!errors.title}
+                                className="h-8 text-xs"
                                 {...register("title", {
                                     required: "Item title is required.",
                                     maxLength: {
@@ -289,30 +290,35 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
                                 })}
                             />
                             {errors.title && (
-                                <p className="text-xs text-destructive">
+                                <p className="text-[10px] text-destructive">
                                     {errors.title.message}
                                 </p>
                             )}
                         </div>
 
                         {/* Description */}
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-description">Description</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="edit-description" className="text-xs">
+                                Description
+                            </Label>
                             <Textarea
                                 id="edit-description"
                                 placeholder="Describe the item, its features, and other details..."
-                                rows={4}
-                                className="resize-y"
+                                rows={3}
+                                className="resize-y text-xs"
                                 {...register("description")}
                             />
                         </div>
 
                         {/* Category */}
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-category">Category</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="edit-category" className="text-xs">
+                                Category
+                            </Label>
                             <Input
                                 id="edit-category"
                                 placeholder="e.g. Electronics, Fashion, Vehicles"
+                                className="h-8 text-xs"
                                 {...register("category")}
                             />
                         </div>
@@ -321,48 +327,46 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
 
                 {/* Images */}
                 <Card>
-                    <CardHeader className="p-4 sm:p-6">
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0 space-y-1.5">
-                                <CardTitle className="text-base sm:text-lg">
+                    <CardHeader className="p-3">
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 space-y-0.5">
+                                <CardTitle className="text-sm">
                                     Item Images
                                 </CardTitle>
-                                <CardDescription>
-                                    Keep existing images or add new ones. The
-                                    first image is the cover.
+                                <CardDescription className="text-xs">
+                                    Keep existing or add new. First is the cover.
                                 </CardDescription>
                             </div>
-                            <Badge variant="secondary" className="shrink-0">
+                            <Badge variant="secondary" className="shrink-0 text-[10px]">
                                 {totalCount}/{MAX_IMAGES}
                             </Badge>
                         </div>
                     </CardHeader>
 
-                    <CardContent className="space-y-5 p-4 pt-0 sm:p-6 sm:pt-0">
+                    <CardContent className="space-y-4 p-3 pt-0">
                         {/* Existing images */}
                         {existingImages.length > 0 && (
-                            <div className="space-y-2">
-                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                                     Current Images
                                 </p>
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
+                                <div className="grid grid-cols-2 gap-2">
                                     {existingImages.map((img, index) => (
                                         <div
                                             key={img.id}
-                                            className="group relative aspect-square overflow-hidden rounded-xl border bg-muted"
+                                            className="group relative aspect-square overflow-hidden rounded-lg border bg-muted"
                                         >
                                             <img
                                                 src={img.url}
-                                                alt={`Existing image ${
-                                                    index + 1
-                                                }`}
+                                                alt={`Existing image ${index + 1
+                                                    }`}
                                                 className="h-full w-full object-cover"
                                             />
 
                                             {index === 0 && (
                                                 <Badge
                                                     variant="secondary"
-                                                    className="absolute bottom-1.5 left-1.5 bg-background/90 text-foreground backdrop-blur sm:bottom-2 sm:left-2"
+                                                    className="absolute bottom-1 left-1 px-1.5 py-0 text-[9px] bg-background/90 text-foreground backdrop-blur"
                                                 >
                                                     Cover
                                                 </Badge>
@@ -375,12 +379,11 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
                                                 onClick={() =>
                                                     removeExistingImage(img.id)
                                                 }
-                                                aria-label={`Remove existing image ${
-                                                    index + 1
-                                                }`}
-                                                className="absolute right-1.5 top-1.5 h-7 w-7 rounded-full opacity-90 transition-opacity hover:opacity-100 sm:right-2 sm:top-2"
+                                                aria-label={`Remove existing image ${index + 1
+                                                    }`}
+                                                className="absolute right-1 top-1 h-6 w-6 rounded-full opacity-90 hover:opacity-100"
                                             >
-                                                <X className="h-4 w-4" />
+                                                <X className="h-3 w-3" />
                                             </Button>
                                         </div>
                                     ))}
@@ -390,15 +393,15 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
 
                         {/* New images */}
                         {newImages.length > 0 && (
-                            <div className="space-y-2">
-                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                                     New Images
                                 </p>
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
+                                <div className="grid grid-cols-2 gap-2">
                                     {newPreviews.map((preview, index) => (
                                         <div
                                             key={`${newImages[index].name}-${index}`}
-                                            className="group relative aspect-square overflow-hidden rounded-xl border bg-muted"
+                                            className="group relative aspect-square overflow-hidden rounded-lg border bg-muted"
                                         >
                                             <img
                                                 src={preview}
@@ -408,7 +411,7 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
 
                                             <Badge
                                                 variant="default"
-                                                className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2"
+                                                className="absolute bottom-1 left-1 px-1.5 py-0 text-[9px]"
                                             >
                                                 New
                                             </Badge>
@@ -420,12 +423,11 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
                                                 onClick={() =>
                                                     removeNewImage(index)
                                                 }
-                                                aria-label={`Remove new image ${
-                                                    index + 1
-                                                }`}
-                                                className="absolute right-1.5 top-1.5 h-7 w-7 rounded-full opacity-90 transition-opacity hover:opacity-100 sm:right-2 sm:top-2"
+                                                aria-label={`Remove new image ${index + 1
+                                                    }`}
+                                                className="absolute right-1 top-1 h-6 w-6 rounded-full opacity-90 hover:opacity-100"
                                             >
-                                                <X className="h-4 w-4" />
+                                                <X className="h-3 w-3" />
                                             </Button>
                                         </div>
                                     ))}
@@ -438,16 +440,16 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={totalCount >= MAX_IMAGES}
-                            className="flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/30 px-4 py-8 text-center transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60 sm:py-10"
+                            className="flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/30 px-3 py-6 text-center transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary sm:h-12 sm:w-12">
-                                <ImagePlus className="h-5 w-5 sm:h-6 sm:w-6" />
+                            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                <ImagePlus className="h-5 w-5" />
                             </div>
-                            <p className="text-sm font-medium">
+                            <p className="text-xs font-medium">
                                 Click to add images
                             </p>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                                JPEG, PNG, WEBP or AVIF · Maximum 5MB each
+                            <p className="mt-0.5 text-[10px] text-muted-foreground">
+                                JPEG, PNG, WEBP or AVIF · Max 5MB each
                             </p>
 
                             <input
@@ -465,19 +467,21 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
 
                 {/* Item Settings */}
                 <Card>
-                    <CardHeader className="p-4 sm:p-6">
-                        <CardTitle className="text-base sm:text-lg">
+                    <CardHeader className="p-3">
+                        <CardTitle className="text-sm">
                             Item Settings
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-xs">
                             Update the condition and publishing status.
                         </CardDescription>
                     </CardHeader>
 
-                    <CardContent className="grid gap-4 p-4 pt-0 sm:grid-cols-2 sm:gap-5 sm:p-6 sm:pt-0">
+                    <CardContent className="grid gap-3 p-3 pt-0">
                         {/* Condition */}
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-condition">Condition</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="edit-condition" className="text-xs">
+                                Condition
+                            </Label>
                             <Select
                                 value={condition}
                                 onValueChange={(v) =>
@@ -490,7 +494,7 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
                             >
                                 <SelectTrigger
                                     id="edit-condition"
-                                    className="w-full"
+                                    className="h-8 w-full text-xs"
                                 >
                                     <SelectValue placeholder="Select condition" />
                                 </SelectTrigger>
@@ -505,8 +509,10 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
                         </div>
 
                         {/* Status */}
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-status">Status</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="edit-status" className="text-xs">
+                                Status
+                            </Label>
                             <Select
                                 value={status}
                                 onValueChange={(v) =>
@@ -517,7 +523,7 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
                             >
                                 <SelectTrigger
                                     id="edit-status"
-                                    className="w-full"
+                                    className="h-8 w-full text-xs"
                                 >
                                     <SelectValue placeholder="Select status" />
                                 </SelectTrigger>
@@ -536,30 +542,32 @@ export default function EditItem({ item, onSuccess }: EditItemProps) {
                 </Card>
 
                 {/* Submit */}
-                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+                <div className="flex flex-col-reverse gap-2">
                     <Button
                         type="button"
                         variant="outline"
+                        size="sm"
                         disabled={isPending}
                         onClick={handleReset}
-                        className="w-full sm:w-auto"
+                        className="w-full text-xs"
                     >
                         Reset
                     </Button>
 
                     <Button
                         type="submit"
+                        size="sm"
                         disabled={isPending || !title.trim()}
-                        className="w-full sm:w-auto"
+                        className="w-full text-xs"
                     >
                         {isPending ? (
                             <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 Saving...
                             </>
                         ) : (
                             <>
-                                <Save className="h-4 w-4" />
+                                <Save className="h-3.5 w-3.5" />
                                 Save Changes
                             </>
                         )}

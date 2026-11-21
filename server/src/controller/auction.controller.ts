@@ -723,39 +723,44 @@ export const submitPaymentTransaction = catchAsync(
         timeZone: "Africa/Addis_Ababa",
       }),
     );
+    // ============================================================
+    // 5. FIND ACTIVE PAYMENT ORDER
+    // ============================================================
 
-    const currentTime = new Date(
-      ethiopianNow.getTime() - new Date().getTimezoneOffset() * 60 * 1000,
-    ).toISOString();
+    // expires_at is a timestamptz column (stored in UTC), so compare
+    // against the current UTC timestamp. No manual timezone math needed —
+    // PostgreSQL handles the comparison correctly regardless of the
+    // server's local timezone or the user's location.
+    const currentTime = new Date().toISOString();
 
     const { data: paymentOrder, error: paymentOrderError } = await supabase
       .from("payment_orders")
       .select(
         `
-          id,
-          user_id,
-          auction_id,
-          payment_method_id,
-          bid_amount,
-          currency,
-          transaction_reference,
-          idempotency_key,
-          status,
-          expires_at,
-          created_at,
-          payment_method:payment_methods (
-            id,
-            name,
-            provider,
-            account_name,
-            account_number,
-            instructions
-          ),
-          auction:auctions (
-            starting_bid,
-            participation_fee
-          )
-        `,
+      id,
+      user_id,
+      auction_id,
+      payment_method_id,
+      bid_amount,
+      currency,
+      transaction_reference,
+      idempotency_key,
+      status,
+      expires_at,
+      created_at,
+      payment_method:payment_methods (
+        id,
+        name,
+        provider,
+        account_name,
+        account_number,
+        instructions
+      ),
+      auction:auctions (
+        starting_bid,
+        participation_fee
+      )
+    `,
       )
       .eq("auction_id", auctionId)
       .eq("user_id", userId)
