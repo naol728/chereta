@@ -576,7 +576,7 @@ export const submitPaymentTransaction = catchAsync(
       .toUpperCase();
 
     if (ticketCode) {
-      if (!/^CH-[A-Z0-9]{8}$/.test(ticketCode)) {
+      if (!/^(CH|EB)-[A-Z0-9]{8}$/.test(ticketCode)) {
         return next(new AppError("Invalid ticket code format.", 400));
       }
 

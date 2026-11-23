@@ -415,7 +415,7 @@ export default function PaymentPage() {
         if (paymentOption === "ticket") {
             const normalizedTicket = ticketCode.trim().toUpperCase();
 
-            if (!/^CH-[A-Z0-9]{8}$/.test(normalizedTicket)) {
+            if (!/^(CH|EB)-[A-Z0-9]{8}$/.test(normalizedTicket)) {
                 toast.error(t("payment.invalidTicketCode"));
                 return;
             }
